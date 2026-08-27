@@ -22,5 +22,40 @@ services:
     
     restart: unless-stopped
 
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: norven_backend
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      DB_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/norven
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    volumes:
+      - .:/app
+
+    command:
+      [
+        "uv",
+        "run",
+        "uvicorn",
+        "desafio_fullstack_norven.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+        "--app-dir",
+        "src"
+      ]
+
 volumes:
   postgres_data:

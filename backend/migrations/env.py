@@ -19,10 +19,7 @@ sys.path.insert(
 
 from core.configs import settings
 
-from models.pais_model import PaisModel
-from models.estado_model import EstadoModel
-from models.cidade_model import CidadeModel
-
+import models.__all_models
 
 config = context.config
 

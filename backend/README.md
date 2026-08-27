@@ -61,8 +61,10 @@ backend/
 │   │   ├── configs.py.example
 │   │   ├── database.py
 │   │   ├── deps.py
+│   │   ├── enums.py
 │   │   └── security.py
 │   ├── models/
+│   │   └── __all_models.py
 │   ├── repositories/
 │   ├── schemas/
 │   └── services/
@@ -193,12 +195,20 @@ uv run alembic upgrade head
 
 As migrations são responsáveis pela criação e alteração da estrutura do banco de dados.
 
-Atualmente, entre as tabelas iniciais estão:
+Atualmente, as tabelas criadas são:
 
 ```text
 pais
 estado
 cidade
+enderecos
+contatos
+funcionários
+fornecedores
+categorias
+unidades_medidas
+informacoes_nutricionais
+produtos
 ```
 
 Além delas, o Alembic cria a tabela:
@@ -439,47 +449,48 @@ Atualmente:
 * [x] PostgreSQL com Docker
 * [x] SQLAlchemy assíncrono
 * [x] Alembic
-* [x] Models iniciais de localização
-* [x] Migrations iniciais
+* [x] Models iniciais de localização (pais, estados e cidades)
+* [x] Migrations iniciais (tabela de pais, estados e cidades)
 * [x] Seeder de países
 * [x] Seeder de estados
 * [x] Seeder de cidades
+* [x] Enum de níveis de acesso para funcionários (usuários)
 * [ ] Migrations de:
-  * [ ] Endereços
-  * [ ] Usuários (funcionários)
-  * [ ] Fornecedores
-  * [ ] Contatos
-  * [ ] Categorias
-  * [ ] Unidade de medida
-  * [ ] Produtos
-  * [ ] Informação Nutricional
+  * [x] Endereços
+  * [x] Usuários (funcionários)
+  * [x] Fornecedores
+  * [x] Contatos
+  * [x] Categorias
+  * [x] Unidade de medida
+  * [x] Produtos
+  * [x] Informação Nutricional
   * [ ] Lotes
   * [ ] Entradas
   * [ ] Estoques
   * [ ] Saídas
   * Obs.: Sempre conferir o modelo lógico antes de criar as migrations.
 * [ ] Models de:
-  * [ ] Endereços
-  * [ ] Usuários (funcionários)
-  * [ ] Fornecedores
-  * [ ] Contatos
-  * [ ] Categorias
-  * [ ] Unidade de medida
-  * [ ] Produtos
-  * [ ] Informação Nutricional
+  * [x] Endereços
+  * [x] Usuários (funcionários)
+  * [x] Fornecedores
+  * [x] Contatos
+  * [x] Categorias
+  * [x] Unidade de medida
+  * [x] Produtos
+  * [x] Informação Nutricional
   * [ ] Lotes
   * [ ] Entradas
   * [ ] Estoques
   * [ ] Saídas
 * [ ] Schemas de:
-  * [ ] Endereços
-  * [ ] Usuários (funcionários)
-  * [ ] Fornecedores
-  * [ ] Contatos
-  * [ ] Categorias
-  * [ ] Unidade de medida
-  * [ ] Produtos
-  * [ ] Informação Nutricional
+  * [x] Endereços
+  * [x] Usuários (funcionários)
+  * [x] Fornecedores
+  * [x] Contatos
+  * [x] Categorias
+  * [x] Unidade de medida
+  * [x] Produtos
+  * [x] Informação Nutricional
   * [ ] Lotes
   * [ ] Entradas
   * [ ] Estoques

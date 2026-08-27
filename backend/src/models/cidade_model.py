@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import BigInteger, Integer, String, ForeignKey, SmallInteger
+from sqlalchemy import BigInteger, Integer, String, ForeignKey, SmallInteger, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import UserDefinedType
 
@@ -13,6 +13,11 @@ class PostgreSQLPoint(UserDefinedType):
 
 class CidadeModel(settings.DBBaseModel):
     __tablename__ = "cidade"
+
+    __table_args__ = (
+        Index("idx_cidade_uf", "uf"),
+        Index("idx_cidade_nome_uf", "nome", "uf"),
+    )
     
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     nome: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
@@ -22,3 +27,4 @@ class CidadeModel(settings.DBBaseModel):
     cod_tom: Mapped[Optional[int]] = mapped_column(SmallInteger, nullable=True, server_default="0")
     
     estado: Mapped[Optional["EstadoModel"]] = relationship("EstadoModel", back_populates="cidades")
+    enderecos: Mapped[List["EnderecoModel"]] = relationship("EnderecoModel", back_populates="municipio")

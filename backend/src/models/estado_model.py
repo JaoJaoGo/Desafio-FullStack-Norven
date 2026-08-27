@@ -1,11 +1,15 @@
 from typing import List, Optional
-from sqlalchemy import BigInteger, Integer, String, ForeignKey, JSON
+from sqlalchemy import BigInteger, Integer, String, ForeignKey, JSON, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.configs import settings
 
 class EstadoModel(settings.DBBaseModel):
     __tablename__ = "estado"
+
+    __table_args__ = (
+        Index("idx_estado_pais", "pais"),
+    )
     
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     nome: Mapped[Optional[str]] = mapped_column(String(60), nullable=True)

@@ -11,3 +11,8 @@ from .categoria_model import CategoriaModel
 from .unidade_medida_model import UnidadeMedidaModel
 from .informacao_nutricional_model import InformacaoNutricionalModel
 from .produto_model import ProdutoModel
+
+from .lote_model import LoteModel
+from .entrada_model import EntradaModel
+from .estoque_model import EstoqueModel
+from .saida_model import SaidaModel

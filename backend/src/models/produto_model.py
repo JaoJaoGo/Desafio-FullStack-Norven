@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -46,3 +46,4 @@ class ProdutoModel(settings.DBBaseModel):
     categoria: Mapped["CategoriaModel"] = relationship("CategoriaModel", back_populates="produtos")
     unidade_medida: Mapped["UnidadeMedidaModel"] = relationship("UnidadeMedidaModel", back_populates="produtos")
     informacao_nutricional: Mapped[Optional["InformacaoNutricionalModel"]] = relationship("InformacaoNutricionalModel", back_populates="produtos")
+    lotes: Mapped[List["LoteModel"]] = relationship("LoteModel", back_populates="produto")

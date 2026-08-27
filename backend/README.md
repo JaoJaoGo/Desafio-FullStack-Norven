@@ -455,7 +455,7 @@ Atualmente:
 * [x] Seeder de estados
 * [x] Seeder de cidades
 * [x] Enum de níveis de acesso para funcionários (usuários)
-* [ ] Migrations de:
+* [x] Migrations de:
   * [x] Endereços
   * [x] Usuários (funcionários)
   * [x] Fornecedores
@@ -464,12 +464,12 @@ Atualmente:
   * [x] Unidade de medida
   * [x] Produtos
   * [x] Informação Nutricional
-  * [ ] Lotes
-  * [ ] Entradas
-  * [ ] Estoques
-  * [ ] Saídas
+  * [x] Lotes
+  * [x] Entradas
+  * [x] Estoques
+  * [x] Saídas
   * Obs.: Sempre conferir o modelo lógico antes de criar as migrations.
-* [ ] Models de:
+* [x] Models de:
   * [x] Endereços
   * [x] Usuários (funcionários)
   * [x] Fornecedores
@@ -478,11 +478,11 @@ Atualmente:
   * [x] Unidade de medida
   * [x] Produtos
   * [x] Informação Nutricional
-  * [ ] Lotes
-  * [ ] Entradas
-  * [ ] Estoques
-  * [ ] Saídas
-* [ ] Schemas de:
+  * [x] Lotes
+  * [x] Entradas
+  * [x] Estoques
+  * [x] Saídas
+* [x] Schemas de:
   * [x] Endereços
   * [x] Usuários (funcionários)
   * [x] Fornecedores
@@ -491,10 +491,10 @@ Atualmente:
   * [x] Unidade de medida
   * [x] Produtos
   * [x] Informação Nutricional
-  * [ ] Lotes
-  * [ ] Entradas
-  * [ ] Estoques
-  * [ ] Saídas
+  * [x] Lotes
+  * [x] Entradas
+  * [x] Estoques
+  * [x] Saídas
 * [ ] Endpoints da API
 * [ ] Controllers, Services e Repositories de:
   * [ ] Endereços

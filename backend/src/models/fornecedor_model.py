@@ -1,3 +1,4 @@
+from typing import List
 from sqlalchemy import CHAR, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,3 +16,4 @@ class FornecedorModel(settings.DBBaseModel):
 
     endereco: Mapped["EnderecoModel"] = relationship("EnderecoModel", back_populates="fornecedores")
     contato: Mapped["ContatoModel"] = relationship("ContatoModel", back_populates="fornecedores")
+    entradas: Mapped[List["EntradaModel"]] = relationship("EntradaModel", back_populates="fornecedor")

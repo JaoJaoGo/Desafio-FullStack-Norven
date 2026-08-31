@@ -10,3 +10,14 @@ class TipoSaidaEnum(str, Enum):
     AVARIA = "AVARIA"
     VENCIMENTO = "VENCIMENTO"
     RECALL = "RECALL"
+
+class ProdutoStatusEnum(str, Enum):
+    SEM_ESTOQUE = "SEM_ESTOQUE"
+    VENCIDO = "VENCIDO"
+    PROXIMO_VENCIMENTO = "PROXIMO_VENCIMENTO"
+    ESTOQUE_BAIXO = "ESTOQUE_BAIXO"
+    OK = "OK"
+
+class TipoMovimentacaoEnum(str, Enum):
+    ENTRADA = "ENTRADA"
+    SAIDA = "SAIDA"

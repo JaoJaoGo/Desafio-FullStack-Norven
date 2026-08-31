@@ -1,3 +1,5 @@
+from typing import Optional
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.contato_model import ContatoModel
@@ -12,12 +14,21 @@ class ContatoRepository:
         await db.flush()
         
         return contato
+
+    @staticmethod
+    async def find_by_id(db: AsyncSession, contato_id: int) -> Optional[ContatoModel]:
+        query = select(ContatoModel).filter(ContatoModel.id == contato_id)
+        result = await db.execute(query)
+
+        return result.scalars().unique().one_or_none()
     
     @staticmethod
-    async def update(db: AsyncSession, contato: ContatoModel, data: ContatoUpdateSchema) -> ContatoModel:
-        for key, value in data.model_dump().items():
-            setattr(contato, key, value)
-        
-        await db.flush()
-        
-        return contato
+    async def find_by_data(db: AsyncSession, data: ContatoCreateSchema) -> Optional[ContatoModel]:
+        query = select(ContatoModel).where(
+            ContatoModel.cod_pais == data.cod_pais,
+            ContatoModel.ddd == data.ddd,
+            ContatoModel.numero == data.numero
+        )
+        result = await db.execute(query)
+
+        return result.scalars().unique().one_or_none()

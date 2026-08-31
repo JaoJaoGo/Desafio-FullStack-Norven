@@ -772,20 +772,70 @@ Factories poderão ser adicionadas posteriormente para geração de dados fictí
 
 > Sempre revisar o modelo lógico e o arquivo gerado pelo Alembic antes de executar uma nova migration.
 
-## API
+## Endpoints
 
-* [ ] Endpoints
-* [ ] Controllers
-* [ ] Services
-* [ ] Repositories
-* [ ] Fluxo completo de autenticação
-* [ ] CRUD das entidades
+* [x] Endereços
+* [x] Usuários / Funcionários
+* [x] Contatos
+* [x] Categorias
+* [x] Unidades de medida
+* [x] Produtos
+* [x] Informações nutricionais
+* [x] Fornecedores
+* [x] Lotes
+* [x] Entradas
+* [x] Estoques
+* [x] Saídas
+
+## Controllers
+
+* [x] Endereços
+* [x] Usuários / Funcionários
+* [x] Contatos
+* [x] Categorias
+* [x] Unidades de medida
+* [x] Produtos
+* [x] Informações nutricionais
+* [x] Fornecedores
+* [x] Lotes
+* [x] Entradas
+* [x] Estoques
+* [x] Saídas
+
+## Services
+
+* [x] Endereços
+* [x] Usuários / Funcionários
+* [x] Contatos
+* [x] Categorias
+* [x] Unidades de medida
+* [x] Produtos
+* [x] Informações nutricionais
+* [x] Fornecedores
+* [x] Lotes
+* [x] Entradas
+* [x] Estoques
+* [x] Saídas
+
+## Repositories
+
+* [x] Endereços
+* [x] Usuários / Funcionários
+* [x] Contatos
+* [x] Categorias
+* [x] Unidades de medida
+* [x] Produtos
+* [x] Informações nutricionais
+* [x] Fornecedores
+* [x] Lotes
+* [x] Entradas
+* [x] Estoques
+* [x] Saídas
 
 ## Qualidade
 
 * [ ] Testes automatizados
 * [ ] Tratamento global de exceções
-* [ ] Documentação completa da API
 
 ## Frontend
 

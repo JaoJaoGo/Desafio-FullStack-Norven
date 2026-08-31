@@ -29,3 +29,5 @@ class UsuarioModel(settings.DBBaseModel):
     endereco: Mapped["EnderecoModel"] = relationship("EnderecoModel", back_populates="usuarios")
     contato: Mapped["ContatoModel"] = relationship("ContatoModel", back_populates="usuario", uselist=False)
     produtos: Mapped[List["ProdutoModel"]] = relationship("ProdutoModel", back_populates="usuario")
+    entradas: Mapped[List["EntradaModel"]] = relationship("EntradaModel", back_populates="usuario")
+    saidas: Mapped[List["SaidaModel"]] = relationship("SaidaModel", back_populates="usuario")

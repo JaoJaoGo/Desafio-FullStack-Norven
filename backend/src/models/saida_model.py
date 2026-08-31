@@ -1,12 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
-from sqlalchemy import CheckConstraint, DateTime, Enum as SqlEnum, ForeignKey, Index, Integer, Numeric, func
+from sqlalchemy import CheckConstraint, DateTime, Enum as SqlEnum, ForeignKey, Index, Integer, Numeric, String, text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.configs import settings
 from core.enums import TipoSaidaEnum
-
 
 class SaidaModel(settings.DBBaseModel):
     __tablename__ = "saidas"
@@ -16,18 +15,7 @@ class SaidaModel(settings.DBBaseModel):
             "quantidade > 0",
             name="ck_saida_quantidade"
         ),
-        CheckConstraint(
-            """
-            tipo_saida IN (
-                'VENDA',
-                'PERDA',
-                'AVARIA',
-                'VENCIMENTO',
-                'RECALL'
-            )
-            """,
-            name="ck_saida_tipo"
-        ),
+
         CheckConstraint(
             """
             (
@@ -42,18 +30,26 @@ class SaidaModel(settings.DBBaseModel):
             """,
             name="ck_saida_preco"
         ),
+
         Index(
             "idx_saida_id_estoque",
             "id_estoque"
         ),
+
         Index(
             "idx_saida_data_saida",
             "data_saida"
         ),
+
         Index(
             "idx_saida_tipo_data",
             "tipo_saida",
             "data_saida"
+        ),
+
+        Index(
+            "idx_saida_id_funcionario",
+            "id_funcionario"
         ),
     )
 
@@ -62,6 +58,7 @@ class SaidaModel(settings.DBBaseModel):
     quantidade: Mapped[Decimal] = mapped_column(Numeric(12, 3), nullable=False)
     preco_venda_unitario: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 2), nullable=True)
     estoque_id: Mapped[int] = mapped_column("id_estoque", Integer, ForeignKey("estoques.id"), nullable=False)
+    usuario_id: Mapped[int] = mapped_column("id_funcionario", ForeignKey("funcionarios.id"), nullable=False)
     tipo_saida: Mapped[TipoSaidaEnum] = mapped_column(
         SqlEnum(
             TipoSaidaEnum,
@@ -74,3 +71,4 @@ class SaidaModel(settings.DBBaseModel):
     )
 
     estoque: Mapped["EstoqueModel"] = relationship("EstoqueModel", back_populates="saidas")
+    usuario = relationship("UsuarioModel", back_populates="saidas")

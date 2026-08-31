@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List
+from typing import List, Optional
 from sqlalchemy import Date, ForeignKey, Index, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,7 +26,7 @@ class LoteModel(settings.DBBaseModel):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     numero: Mapped[str] = mapped_column(String(30), nullable=False)
-    data_validade: Mapped[date] = mapped_column(Date, nullable=False)
+    data_validade: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     produto_id: Mapped[int] = mapped_column("id_produto", Integer, ForeignKey("produtos.id"), nullable=False)
 
     produto: Mapped["ProdutoModel"] = relationship("ProdutoModel", back_populates="lotes")

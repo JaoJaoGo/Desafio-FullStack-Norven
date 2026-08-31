@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import ClassVar
 from pydantic_settings import BaseSettings
 from sqlalchemy.ext.declarative import declarative_base
@@ -18,6 +19,11 @@ class Settings(BaseSettings):
 
     # 60 minutos * 24 horas * 7 dias = 1 semana
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
+
+    PRIMARY_ADMIN_PASSWORD: str
+
+    PRODUTO_VALIDADE_ALERTA_DIAS: int = 30
+    ESTOQUE_BAIXO_LIMITE: Decimal = Decimal("10")
 
     class Config:
         case_sensitive = True

@@ -1,7 +1,10 @@
+from typing import Optional
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.endereco_model import EnderecoModel
-from schemas.endereco_schema import EnderecoCreateSchema, EnderecoUpdateSchema
+from schemas.endereco_schema import EnderecoCreateSchema
+
 
 class EnderecoRepository:
     @staticmethod
@@ -14,10 +17,22 @@ class EnderecoRepository:
         return endereco
 
     @staticmethod
-    async def update(db: AsyncSession, endereco: EnderecoModel, data: EnderecoUpdateSchema) -> EnderecoModel:
-        for key, value in data.model_dump().items():
-            setattr(endereco, key, value)
-        
-        await db.flush()
-        
-        return endereco
+    async def find_by_id(db: AsyncSession, endereco_id: int) -> Optional[EnderecoModel]:
+        query = select(EnderecoModel).where(EnderecoModel.id == endereco_id)
+        result = await db.execute(query)
+
+        return result.scalars().unique().one_or_none()
+
+    @staticmethod
+    async def find_by_data(db: AsyncSession, data: EnderecoCreateSchema) -> Optional[EnderecoModel]:
+        query = select(EnderecoModel).where(
+            EnderecoModel.logradouro == data.logradouro,
+            EnderecoModel.numero == data.numero,
+            EnderecoModel.complemento == data.complemento,
+            EnderecoModel.cep == data.cep,
+            EnderecoModel.bairro == data.bairro,
+            EnderecoModel.municipio_id == data.municipio_id
+        )
+        result = await db.execute(query)
+
+        return result.scalars().unique().one_or_none()

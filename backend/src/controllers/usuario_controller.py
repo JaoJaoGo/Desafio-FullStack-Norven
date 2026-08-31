@@ -1,10 +1,23 @@
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.usuario_model import UsuarioModel
-from schemas.usuario_schema import UsuarioCreateSchema
+from schemas.usuario_schema import UsuarioCreateSchema, UsuarioUpdateSchema
 from services.usuario_service import UsuarioService
 
 class UsuarioController:
     @staticmethod
     async def create(data: UsuarioCreateSchema, db: AsyncSession) -> UsuarioModel:
         return await UsuarioService.create_usuario(db, data)
+
+    @staticmethod
+    async def list_usuarios(db: AsyncSession, search: Optional[str], page: int, per_page: int) -> tuple[list[UsuarioModel], int]:
+        return await UsuarioService.list_usuarios(db, search, page, per_page)
+
+    @staticmethod
+    async def find_by_id(usuario_id: int, db: AsyncSession) -> UsuarioModel:
+        return await UsuarioService.find_by_id(db, usuario_id)
+
+    @staticmethod
+    async def update(usuario_id: int, data: UsuarioUpdateSchema, db: AsyncSession) -> UsuarioModel:
+        return await UsuarioService.update(db=db, usuario_id=usuario_id, data=data)

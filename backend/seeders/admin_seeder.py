@@ -12,7 +12,7 @@ from models.endereco_model import EnderecoModel
 from models.usuario_model import UsuarioModel
 
 
-ADMIN_EMAIL = "admin@norven.local"
+ADMIN_EMAIL = "admin@norven.com.br"
 
 
 async def seed_admin(session: AsyncSession) -> None:

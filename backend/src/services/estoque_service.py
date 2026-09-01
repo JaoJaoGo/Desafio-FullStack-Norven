@@ -16,7 +16,15 @@ class EstoqueService:
 
     @staticmethod
     async def list(db: AsyncSession, filters: EstoqueFilterSchema) -> tuple[list[EstoqueResponseSchema], int]:
-        rows, total = await EstoqueRepository.list(db, filters)
+        rows, total = await EstoqueRepository.list(
+            db=db,
+            search=filters.search,
+            produto_id=filters.produto_id,
+            lote_id=filters.lote_id,
+            somente_com_saldo=filters.somente_com_saldo,
+            page=filters.page,
+            per_page=filters.per_page
+        )
 
         items = [EstoqueResponseSchema(**row) for row in rows]
 
@@ -38,8 +46,13 @@ class EstoqueService:
         try:
             values = data.model_dump(exclude_unset=True)
 
+            localizacao = values.pop("localizacao", None)
+
+            if localizacao is not None:
+                values.update(localizacao)
+
             if values:
-                await EstoqueRepository.update(db, estoque, values)
+                await EstoqueRepository.update(db=db, estoque=estoque, values=values)
 
             await db.commit()
 

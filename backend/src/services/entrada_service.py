@@ -47,7 +47,7 @@ class EntradaService:
             if fornecedor is None:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Fornecedor não encontrado.")
 
-            lote = await EntradaService._resolve_lote(db, produto, lote_id, novo_lote)
+            lote = await EntradaService._resolve_lote(db, produto, data.lote_id, data.novo_lote)
 
             values = {
                 "quantidade": data.quantidade,
@@ -68,7 +68,7 @@ class EntradaService:
                 db,
                 entrada_id=entrada.id,
                 quantidade=data.quantidade,
-                corredor=data.localizacao.corredot,
+                corredor=data.localizacao.corredor,
                 prateleira=data.localizacao.prateleira,
                 secao=data.localizacao.secao
             )
@@ -155,7 +155,7 @@ class EntradaService:
                 values["data_entrada"] = data.data_entrada
             
             if data.localizacao is not None:
-                local_values = data.localizaca.model_dump(exclude_unset=True)
+                local_values = data.localizacao.model_dump(exclude_unset=True)
 
                 for field, value in local_values.items():
                     setattr(estoque, field, value)

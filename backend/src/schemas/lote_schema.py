@@ -1,7 +1,6 @@
 from datetime import date
-from decimal import Decimal
 from typing import Optional, List
-from pydantic import BaseModel as SCBaseModel, Field, model_validator
+from pydantic import BaseModel as SCBaseModel, ConfigDict, Field, model_validator
 
 class LoteBaseSchema(SCBaseModel):
     numero: str = Field(min_length=1, max_length=30)
@@ -22,11 +21,11 @@ class LoteResponseSchema(SCBaseModel):
     id: int
     numero: str
     data_validade: Optional[date]
-
     produto_id: int
-    produto_nome: str
 
-    estoque_total: Decimal
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 class LoteListResponseSchema(SCBaseModel):
     items: List[LoteResponseSchema]

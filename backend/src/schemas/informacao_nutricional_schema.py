@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import Optional
 from pydantic import BaseModel as SCBaseModel, Field
+from pydantic_settings import SettingsConfigDict
 
 from schemas.unidade_medida_schema import UnidadeMedidaResponseSchema
 
@@ -21,5 +22,6 @@ class InformacaoNutricionalResponseSchema(InformacaoNutricionalBaseSchema):
     id: int
     unidade_porcao: UnidadeMedidaResponseSchema
 
-    class Config:
-        from_attributes = True
+    model_config = SettingsConfigDict(
+        from_attributes=True
+    )

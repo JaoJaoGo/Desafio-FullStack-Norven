@@ -21,6 +21,13 @@ class SaidaRepository:
 
     @staticmethod
     async def find_by_id(db: AsyncSession, saida_id: int) -> Optional[SaidaModel]:
+        query = select(SaidaModel).where(SaidaModel.id == saida_id)
+        result = await db.execute(query)
+
+        return result.scalars().unique().one_or_none()
+
+    @staticmethod
+    async def find_detail_by_id(db: AsyncSession, saida_id: int):
         query = (
             select(
                 SaidaModel.id.label("id"),
@@ -43,7 +50,6 @@ class SaidaRepository:
             .join(UsuarioModel, UsuarioModel.id == SaidaModel.usuario_id)
             .where(SaidaModel.id == saida_id)
         )
-
         result = await db.execute(query)
 
         return result.mappings().one_or_none()
@@ -129,7 +135,8 @@ class SaidaRepository:
             count_query = count_query.where(*conditions)
             query = query.where(*conditions)
         
-        total = await db.execute(count_query).scalar_one()
-        result = await db.execute(query.order_by(SaidaModel.data_saida.desc(), SaidaModel.id.desc()).offset((filters.page - 1) * filters.page_size).limit(filters.page_size))
+        count_result = await db.execute(count_query)
+        total = count_result.scalar_one()
+        result = await db.execute(query.order_by(SaidaModel.data_saida.desc(), SaidaModel.id.desc()).offset((filters.page - 1) * filters.per_page).limit(filters.per_page))
 
         return result.mappings().all(), total

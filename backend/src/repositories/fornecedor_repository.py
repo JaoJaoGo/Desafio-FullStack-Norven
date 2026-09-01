@@ -11,7 +11,7 @@ class FornecedorRepository:
         query = select(FornecedorModel).where(FornecedorModel.id == fornecedor_id)
 
         if with_relations:
-            query = query.options(selectinload(FornecedorModel.endereco), selectinload(FornecedorModel.contato))
+            query = query.options(selectinload(FornecedorModel.endereco), selectinload(FornecedorModel.contato)).execution_options(populate_existing=True)
 
         result = await db.execute(query)
 

@@ -22,7 +22,7 @@ router = APIRouter()
 async def create_produto(data: ProdutoCreateSchema, db: AsyncSession = Depends(get_session), current_user: UsuarioModel = Depends(get_current_user)):
     return await ProdutoController.create(data, db, current_user)
 
-@router.get("/", response_model=ProdutoListResponseSchema)
+@router.get("/", response_model=ProdutoListResponseSchema, dependencies=[Depends(get_current_user)])
 async def list_produtos(
     nome: Optional[str] = Query(default=None, description="Filtra pelo nome do produto"),
     categoria_id: Optional[int] = Query(default=None, ge=1),

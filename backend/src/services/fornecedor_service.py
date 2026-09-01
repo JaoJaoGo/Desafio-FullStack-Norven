@@ -18,14 +18,14 @@ class FornecedorService:
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Já existe fornecedor com este CNPJ")
 
             endereco = await EnderecoRepository.find_by_data(db, data.endereco)
-            if endereco is not None:
+            if endereco is None:
                 endereco = await EnderecoRepository.create(db, data.endereco)
 
             contato = await ContatoRepository.find_by_data(db, data.contato)
-            if contato is not None:
-                contato = await ContatoRepository.crate(db, data.contato)
+            if contato is None:
+                contato = await ContatoRepository.create(db, data.contato)
 
-            fornecedor = await FornecedorRepository.create(db, data.nome, data.cnpj, endereco_id=endereco.id, contato_id=contato.id)
+            fornecedor = await FornecedorRepository.create(db=db, nome=data.nome, cnpj=data.cnpj, endereco_id=endereco.id, contato_id=contato.id)
 
             await db.commit()
 
@@ -55,7 +55,7 @@ class FornecedorService:
 
     @staticmethod
     async def update(db: AsyncSession, fornecedor_id: int, data: FornecedorUpdateSchema):
-        fornecedor = await FornecedorRepository.find_by_id(db, fornecedor_id)
+        fornecedor = await FornecedorRepository.find_by_id(db, fornecedor_id, with_relations=True)
         if fornecedor is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Fornecedor não encontrado.")
 
@@ -99,6 +99,7 @@ class FornecedorService:
                     endereco = await EnderecoRepository.create(db, endereco_data)
 
                 values["endereco_id"] = endereco.id
+                fornecedor.endereco = endereco
 
             if data.contato is not None:
                 contato_values = {
@@ -124,6 +125,7 @@ class FornecedorService:
                     contato = await ContatoRepository.create(db, contato_data)
 
                 values["contato_id"] = contato.id
+                fornecedor.contato = contato
 
             if values:
                 await FornecedorRepository.update(db, fornecedor, values)

@@ -30,13 +30,13 @@ class UsuarioService:
             endereco = await EnderecoRepository.create(db, data.endereco)
             contato = await ContatoRepository.create(db, data.contato)
 
-            password_hash = get_password_hash(data.password)
+            hashed_password = get_password_hash(data.password)
 
             usuario = await UsuarioRepository.create(
                 db=db,
                 nome=data.nome,
                 email=data.email,
-                password_hash=password_hash,
+                hashed_password=hashed_password,
                 nivel_acesso=data.nivel_acesso,
                 endereco_id=endereco.id,
                 contato_id=contato.id
@@ -61,12 +61,12 @@ class UsuarioService:
             raise
 
     @staticmethod
-    async def list_usuarios(db: AsyncSession, search: Optional[str], page: int, per_page: int) -> tuple[list[UsuarioModel], int]:
+    async def list(db: AsyncSession, search: Optional[str], page: int, per_page: int) -> tuple[list[UsuarioModel], int]:
         return await UsuarioRepository.list(db, search, page, per_page)
 
     @staticmethod
-    async def get_by_id(db: AsyncSession, usuario_id: int) -> UsuarioModel:
-        usuario = await UsuarioRepository.find_by_id(db, usuario_id, with_relation=True)
+    async def find_by_id(db: AsyncSession, usuario_id: int) -> UsuarioModel:
+        usuario = await UsuarioRepository.find_by_id(db, usuario_id, with_relations=True)
 
         if usuario is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")
@@ -74,7 +74,7 @@ class UsuarioService:
         return usuario
 
     @staticmethod
-    async def update_usuario(db: AsyncSession, usuario_id: int, data: UsuarioUpdateSchema) -> UsuarioModel:
+    async def update(db: AsyncSession, usuario_id: int, data: UsuarioUpdateSchema) -> UsuarioModel:
         usuario = await UsuarioRepository.find_by_id(db=db, usuario_id=usuario_id, with_relations=True)
 
         if usuario is None:
@@ -119,6 +119,7 @@ class UsuarioService:
                     endereco = await EnderecoRepository.create(db, novo_endereco_data)
 
                 usuario_values["endereco_id"] = endereco.id
+                usuario.endereco = endereco
 
             # ---------------------------------
             # CONTATO
@@ -143,6 +144,7 @@ class UsuarioService:
                     contato = await ContatoRepository.create(db, novo_contato_data)
 
                 usuario_values["contato_id"] = contato.id
+                usuario.contato = contato
 
             # ---------------------------------
             # USUÁRIO

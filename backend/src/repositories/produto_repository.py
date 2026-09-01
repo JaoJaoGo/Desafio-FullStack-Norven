@@ -115,8 +115,8 @@ class ProdutoRepository:
         return result.scalars().unique().one_or_none()
 
     @staticmethod
-    async def find_by_code(db: AsyncSession, cod_idf: str) -> Optional[ProdutoModel]:
-        query = select(ProdutoModel).where(ProdutoModel.cod_idf == cod_idf)
+    async def find_by_code(db: AsyncSession, cod_idt: str) -> Optional[ProdutoModel]:
+        query = select(ProdutoModel).where(ProdutoModel.cod_idt == cod_idt)
         result = await db.execute(query)
         return result.scalars().unique().one_or_none()
 
@@ -125,7 +125,7 @@ class ProdutoRepository:
     async def create(
         db: AsyncSession,
         *,
-        cod_idf: str,
+        cod_idt: str,
         nome: str,
         descricao: Optional[str],
         preco_venda_atual: Decimal,
@@ -136,7 +136,7 @@ class ProdutoRepository:
         informacao_nutricional_id: Optional[int]
     ) -> ProdutoModel:
         produto = ProdutoModel(
-            cod_idf=cod_idf,
+            cod_idt=cod_idt,
             nome=nome,
             descricao=descricao,
             preco_venda_atual=preco_venda_atual,

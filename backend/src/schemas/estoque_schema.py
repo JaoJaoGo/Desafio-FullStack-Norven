@@ -26,11 +26,10 @@ class EstoqueResponseSchema(SCBaseModel):
     produto_nome: str
 
 class EstoqueListResponseSchema(SCBaseModel):
-    estoques: List[EstoqueResponseSchema]
+    items: List[EstoqueResponseSchema]
     total: int
     page: int
-    page_size: int
-    total_pages: int
+    per_page: int
 
 class EstoqueFilterSchema(SCBaseModel):
     search: Optional[str] = None

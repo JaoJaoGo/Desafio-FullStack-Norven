@@ -1,0 +1,29 @@
+services:
+  backend:
+    environment:
+      TEST_DB_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres_test:5432/norven_test
+
+    depends_on:
+      postgres_test:
+        condition: service_healthy
+
+  postgres_test:
+    image: postgres:17-alpine
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: norven_test
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d norven_test"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    tmpfs:
+      - /var/lib/postgresql/data

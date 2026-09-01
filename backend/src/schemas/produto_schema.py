@@ -1,14 +1,14 @@
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Optional, List
-from pydantic import BaseModel as SCBaseModel, Field, EmailStr, model_validator
+from typing import List, Optional
+from pydantic import BaseModel as SCBaseModel, ConfigDict, EmailStr, Field, model_validator
 
 from core.enums import ProdutoStatusEnum
 from schemas.categoria_schema import CategoriaResponseSchema
-from schemas.informacao_nutricional_schema import InformacaoNutricionalResponseSchema
+from schemas.estoque_schema import EstoqueResponseSchema
+from schemas.informacao_nutricional_schema import InformacaoNutricionalCreateSchema, InformacaoNutricionalResponseSchema
 from schemas.lote_schema import LoteResponseSchema
 from schemas.unidade_medida_schema import UnidadeMedidaResponseSchema
-from schemas.estoque_schema import EstoqueResponseSchema
 
 class ProdutoBaseSchema(SCBaseModel):
     cod_idt: str = Field(min_length=1, max_length=50)
@@ -16,13 +16,11 @@ class ProdutoBaseSchema(SCBaseModel):
     descricao: Optional[str] = None
     preco_venda_atual: Decimal = Field(ge=0, max_digits=10, decimal_places=2)
     eh_perecivel: bool
-    usuario_id: int = Field(gt=0)
     categoria_id: int = Field(gt=0)
     unidade_medida_id: int = Field(gt=0)
-    informacao_nutricional_id: Optional[int] = None
-    
+
 class ProdutoCreateSchema(ProdutoBaseSchema):
-    pass
+    informacao_nutricional: Optional[InformacaoNutricionalCreateSchema] = None
 
 class ProdutoListItemSchema(SCBaseModel):
     id: int
@@ -30,14 +28,19 @@ class ProdutoListItemSchema(SCBaseModel):
     nome: str
     preco_venda_atual: Decimal
     eh_perecivel: bool
+
     categoria_id: int
     categoria: str
+
     unidade_medida_id: int
     unidade_medida: str
     unidade_medida_sigla: str
+
     validade: Optional[date]
+
     estoque_total: Decimal
     estoque_baixo: bool
+
     status: ProdutoStatusEnum
 
 class ProdutoFilterSchema(SCBaseModel):
@@ -67,22 +70,21 @@ class ProdutoUpdateSchema(SCBaseModel):
     descricao: Optional[str] = None
     preco_venda_atual: Optional[Decimal] = Field(default=None, ge=0, max_digits=10, decimal_places=2)
     eh_perecivel: Optional[bool] = None
-    usuario_id: Optional[int] = None
-    categoria_id: Optional[int] = None
-    unidade_medida_id: Optional[int] = None
-    informacao_nutricional_id: Optional[int] = None
+    categoria_id: Optional[int] = Field(default=None, gt=0)
+    unidade_medida_id: Optional[int] = Field(default=None, gt=0)
+    informacao_nutricional: Optional[InformacaoNutricionalCreateSchema] = None
 
 class UsuarioProdutoResumoSchema(SCBaseModel):
     id: int
     nome: str
     email: EmailStr
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 class ProdutoListResponseSchema(SCBaseModel):
     items: List[ProdutoListItemSchema]
-
     total: int
     page: int
     per_page: int
@@ -101,7 +103,7 @@ class ProdutoDetailResponseSchema(SCBaseModel):
     informacao_nutricional_id: Optional[int]
     responsavel: UsuarioProdutoResumoSchema
     categoria: CategoriaResponseSchema
-    unidade_medida: (UnidadeMedidaResponseSchema)
+    unidade_medida: UnidadeMedidaResponseSchema
     informacao_nutricional: Optional[InformacaoNutricionalResponseSchema]
     validade: Optional[date]
     estoque_total: Decimal

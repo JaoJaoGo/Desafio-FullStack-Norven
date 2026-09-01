@@ -1,4 +1,3 @@
-from itertools import count
 from typing import Optional
 from sqlalchemy import select, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,7 +46,8 @@ class LoteRepository:
             base = base.where(*conditions)
             count_query = count_query.where(*conditions)
 
-        total = await db.execute(count_query).scalar_one()
+        count_result = await db.execute(count_query)
+        total = count_result.scalar_one()
 
         result = await db.execute(
             select(LoteModel, ProdutoModel.nome.label("produto_nome"), estoque_total.label("estoque_total"))
@@ -82,6 +82,14 @@ class LoteRepository:
         return result.scalars().unique().one_or_none()
 
     @staticmethod
+    async def find_detail_by_id(db: AsyncSession, lote_id: int) -> Optional[LoteModel]:
+        query = select(LoteModel).where(LoteModel.id == lote_id)
+
+        result = await db.execute(query)
+
+        return result.scalars().unique().one_or_none()
+
+    @staticmethod
     async def exists_without_validity(db: AsyncSession, produto_id: int) -> bool:
         query = select(LoteModel.id).filter(LoteModel.produto_id == produto_id, LoteModel.data_validade.is_(None)).limit(1)
         result = await db.execute(query)
@@ -99,4 +107,13 @@ class LoteRepository:
         db.add(lote)
         await db.flush()
         
+        return lote
+
+    @staticmethod
+    async def update(db: AsyncSession, lote: LoteModel, values: dict) -> LoteModel:
+        for field, value in values.items():
+            setattr(lote, field, value)
+
+        await db.flush()
+
         return lote

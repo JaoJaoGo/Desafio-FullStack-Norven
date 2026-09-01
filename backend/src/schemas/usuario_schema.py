@@ -1,5 +1,6 @@
 from typing import Optional, List
 from pydantic import BaseModel as SCBaseModel, EmailStr, Field
+from pydantic_settings import SettingsConfigDict
 
 from core.enums import NivelAcessoEnum
 from schemas.endereco_schema import EnderecoCreateSchema, EnderecoUpdateSchema, EnderecoResponseSchema
@@ -31,15 +32,17 @@ class UsuarioUpdateSchema(SCBaseModel):
 class UsuarioResponseSchema(UsuarioBaseSchema):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = SettingsConfigDict(
+        from_attributes=True
+    )
 
 class UsuarioDetailResponseSchema(UsuarioResponseSchema):
     endereco: EnderecoResponseSchema
     contato: ContatoResponseSchema
 
-    class Config:
-        from_attributes = True
+    model_config = SettingsConfigDict(
+        from_attributes=True
+    )
 
 class UsuarioListResponseSchema(SCBaseModel):
     items: List[UsuarioResponseSchema]

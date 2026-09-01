@@ -11,8 +11,8 @@ class UsuarioController:
         return await UsuarioService.create_usuario(db, data)
 
     @staticmethod
-    async def list_usuarios(db: AsyncSession, search: Optional[str], page: int, per_page: int) -> tuple[list[UsuarioModel], int]:
-        return await UsuarioService.list_usuarios(db, search, page, per_page)
+    async def list(db: AsyncSession, search: Optional[str], page: int, per_page: int) -> tuple[list[UsuarioModel], int]:
+        return await UsuarioService.list(db, search, page, per_page)
 
     @staticmethod
     async def find_by_id(usuario_id: int, db: AsyncSession) -> UsuarioModel:

@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import ClassVar
-from pydantic_settings import BaseSettings
-from sqlalchemy.ext.declarative import declarative_base
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.orm import declarative_base
 
 DBBaseModel = declarative_base()
 
@@ -25,7 +25,10 @@ class Settings(BaseSettings):
     PRODUTO_VALIDADE_ALERTA_DIAS: int = 30
     ESTOQUE_BAIXO_LIMITE: Decimal = Decimal("10")
 
-    class Config:
-        case_sensitive = True
+    model_config = SettingsConfigDict(
+        case_sensitive=True,
+        env_file=".env",
+        extra="ignore"
+    )
     
 settings: Settings = Settings()

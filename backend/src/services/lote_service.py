@@ -15,7 +15,7 @@ class LoteService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produto não encontrado.")
 
         if produto.eh_perecivel and data.data_validade is None:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Data de validade é obrigatória para produtos perecíveis.")
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Data de validade é obrigatória para produtos perecíveis.")
 
         lote_existente = await LoteRepository.find_by_product_and_number(db, data.produto_id, data.numero)
 
@@ -58,13 +58,21 @@ class LoteService:
         if row is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lote não encontrado.")
 
-        return LoteResponseSchema(**row)
+        return LoteResponseSchema.model_validate(row)
 
     @staticmethod
-    async def list(db: AsyncSession, filters: LoteFilterSchema) -> List[LoteResponseSchema]:
-        rows, total = await LoteRepository.list(db, filters)
+    async def list(db: AsyncSession, filters: LoteFilterSchema) -> tuple[List[LoteResponseSchema], int]:
+        rows, total = await LoteRepository.list(
+            db=db, 
+            search=filters.search, 
+            produto_id=filters.produto_id, 
+            validade_inicio=filters.validade_inicio, 
+            validade_fim=filters.validade_fim,
+            page=filters.page,
+            per_page=filters.per_page
+        )
 
-        items = [LoteResponseSchema(**row) for row in rows]
+        items = [LoteResponseSchema.model_validate(row[0]) for row in rows]
         
         return items, total
 
@@ -72,7 +80,7 @@ class LoteService:
     async def list_by_product(db: AsyncSession, produto_id: int) -> List[LoteResponseSchema]:
         rows = await LoteRepository.list_by_product(db, produto_id)
         
-        return [LoteResponseSchema(**row) for row in rows]
+        return [LoteResponseSchema.model_validate(row) for row in rows]
 
     @staticmethod
     async def update(db: AsyncSession, lote_id: int, data: LoteUpdateSchema):
@@ -81,28 +89,28 @@ class LoteService:
         if lote is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lote não encontrado.")
 
-            try:
-                values = data.model_dump(exclude_unset=True)
+        try:
+            values = data.model_dump(exclude_unset=True)
 
-                if data.numero is not None and data.numero != lote.numero:
-                    existente = await LoteRepository.find_by_product_and_number(db, lote.produto_id, data.numero)
+            if data.numero is not None and data.numero != lote.numero:
+                existente = await LoteRepository.find_by_product_and_number(db, lote.produto_id, data.numero)
 
-                    if existente is not None and existente.id != lote.id:
-                        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Já existe um lote com este número para este produto.")
+                if existente is not None and existente.id != lote.id:
+                    raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Já existe um lote com este número para este produto.")
 
-                if values:
-                    await LoteRepository.update(db, lote_id, values)
+            if values:
+                await LoteRepository.update(db=db, lote=lote, values=values)
 
-                await db.commit()
+            await db.commit()
 
-                return await LoteService.find_by_id(db, lote_id)
-            except HTTPException:
-                await db.rollback()
-                raise
-            except IntegrityError:
-                await db.rollback()
+            return await LoteService.find_by_id(db, lote_id)
+        except HTTPException:
+            await db.rollback()
+            raise
+        except IntegrityError:
+            await db.rollback()
 
-                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Não foi possível atualizar o lote.")
-            except Exception:
-                await db.rollback()
-                raise
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Não foi possível atualizar o lote.")
+        except Exception:
+            await db.rollback()
+            raise

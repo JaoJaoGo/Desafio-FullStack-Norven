@@ -16,12 +16,16 @@ class UsuarioRepository:
 
     @staticmethod
     async def find_by_id(db: AsyncSession, usuario_id: int, with_relations: bool = False) -> Optional[UsuarioModel]:
-        query = select(UsuarioModel).filter(UsuarioModel.id == usuario_id)
+        query = select(UsuarioModel).where(UsuarioModel.id == usuario_id)
 
         if with_relations:
-            query = query.options(
-                selectinload(UsuarioModel.endereco),
-                selectinload(UsuarioModel.contato)
+            query = (
+                query
+                .options(
+                    selectinload(UsuarioModel.endereco),
+                    selectinload(UsuarioModel.contato)
+                )
+                .execution_options(populate_existing=True)
             )
 
         result = await db.execute(query)
@@ -42,26 +46,32 @@ class UsuarioRepository:
                 )
             )
 
-            count_query = select(func.count(UsuarioModel.id))
+        count_query = select(func.count(UsuarioModel.id))
 
-            if filters:
-                count_query = count_query.where(*filters)
-            
-            count_result = await db.execute(count_query)
-            total = count_result.scalar_one()
+        query = select(UsuarioModel)
 
-            offset = (page - 1) * per_page
+        if filters:
+            count_query = count_query.where(*filters)
+            query = query.where(*filters)
 
-            query = select(UsuarioModel).order_by(UsuarioModel.nome).offset(offset).limit(per_page)
+        count_result = await db.execute(count_query)
 
-            if filters:
-                query = query.filter(*filters)
+        total = count_result.scalar_one()
 
-            result = await db.execute(query)
+        offset = (page - 1) * per_page
 
-            usuarios = list(result.scalars().all())
+        query = (
+            query
+            .order_by(UsuarioModel.nome.asc())
+            .offset(offset)
+            .limit(per_page)
+        )
 
-            return usuarios, total
+        result = await db.execute(query)
+
+        usuarios = list(result.scalars().all())
+
+        return usuarios, total
 
     @staticmethod
     async def create(db: AsyncSession, nome: str, email: str, hashed_password: str, endereco_id: int, contato_id: int, nivel_acesso: NivelAcessoEnum) -> UsuarioModel:

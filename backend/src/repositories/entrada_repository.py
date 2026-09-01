@@ -1,3 +1,4 @@
+from decimal import Decimal
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,9 +12,34 @@ from models.usuario_model import UsuarioModel
 
 from schemas.entrada_schema import EntradaFilterSchema
 
+
 class EntradaRepository:
     @staticmethod
-    async def create(db: AsyncSession, **values) -> EntradaModel:
+    async def create(
+        db: AsyncSession,
+        *,
+        quantidade: Decimal,
+        preco_custo_unitario: Decimal,
+        tipo_entrada: str,
+        observacao: Optional[str],
+        fornecedor_id: int,
+        lote_id: int,
+        usuario_id: int,
+        data_entrada: Optional[datetime] = None,
+    ) -> EntradaModel:
+        values = {
+            "quantidade": quantidade,
+            "preco_custo_unitario": preco_custo_unitario,
+            "tipo_entrada": tipo_entrada,
+            "observacao": observacao,
+            "fornecedor_id": fornecedor_id,
+            "lote_id": lote_id,
+            "usuario_id": usuario_id,
+        }
+
+        if data_entrada is not None:
+            values["data_entrada"] = data_entrada
+
         entrada = EntradaModel(**values)
 
         db.add(entrada)
@@ -24,7 +50,6 @@ class EntradaRepository:
     @staticmethod
     async def find_by_id(db: AsyncSession, entrada_id: int):
         query = select(EntradaModel).where(EntradaModel.id == entrada_id)
-
         result = await db.execute(query)
 
         return result.scalars().unique().one_or_none()
@@ -103,7 +128,7 @@ class EntradaRepository:
                     FornecedorModel.cnpj.ilike(value),
                     LoteModel.numero.ilike(value),
                     EntradaModel.tipo_entrada.ilike(value),
-                    UsuarioModel.nome.ilike(value)
+                    UsuarioModel.nome.ilike(value),
                 )
             )
 
@@ -159,7 +184,7 @@ class EntradaRepository:
                 EstoqueModel.quantidade_atual.label("quantidade_atual"),
                 EstoqueModel.corredor.label("corredor"),
                 EstoqueModel.prateleira.label("prateleira"),
-                EstoqueModel.secao.label("secao")
+                EstoqueModel.secao.label("secao"),
             )
             .join(FornecedorModel, FornecedorModel.id == EntradaModel.fornecedor_id)
             .join(LoteModel, LoteModel.id == EntradaModel.lote_id)
@@ -172,7 +197,8 @@ class EntradaRepository:
             count_query = count_query.where(*conditions)
             query = query.where(*conditions)
 
-        total = await db.execute(count_query).scalar_one()
+        count_result = await db.execute(count_query)
+        total = count_result.scalar_one()
 
         result = await db.execute(
             query

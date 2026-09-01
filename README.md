@@ -1,600 +1,56 @@
 # Desafio FullStack - Norven
 
-Projeto desenvolvido como parte do desafio FullStack da **Norven**.
+Projeto desenvolvido como parte do desafio FullStack da **Norven** para gerenciamento de produtos, estoque e movimentações.
 
-Nesta primeira etapa, o foco está na construção do **backend e banco de dados**. O frontend será desenvolvido posteriormente.
-
-O ambiente da aplicação é executado utilizando **Docker**, com containers separados para:
-
-* API FastAPI;
-* PostgreSQL.
-
----
+Nesta etapa, o backend e o banco de dados estão implementados e sendo validados por testes de integração. O frontend será desenvolvido posteriormente.
 
 ## Tecnologias
 
 ### Backend
 
-* Python
-* FastAPI
-* SQLAlchemy
-* Pydantic
-* Alembic
-* asyncpg
-* bcrypt
-* JWT
+- Python
+- FastAPI
+- SQLAlchemy
+- Pydantic
+- Alembic
+- asyncpg
+- bcrypt
+- JWT
+- OAuth2 Bearer Token
 
-### Banco de Dados
+### Banco de dados
 
-* PostgreSQL
+- PostgreSQL
+
+### Testes
+
+- pytest
+- pytest-asyncio
+- HTTPX
 
 ### Containerização
 
-* Docker
-* Docker Compose
+- Docker
+- Docker Compose
 
 ### Gerenciamento de dependências
 
-* uv
+- uv
 
 ### Frontend
 
-Será desenvolvido posteriormente utilizando:
+Planejado conforme o desafio:
 
-* Vue.js
-* TypeScript
-
----
-
-## Estrutura do projeto
-
-A estrutura atual do backend segue uma separação de responsabilidades inspirada em boas práticas utilizadas também em projetos Laravel.
-
-```text
-backend/
-├── migrations/
-│   └── versions/
-│
-├── seeders/
-│   ├── data/
-│   │   ├── pais.sql
-│   │   ├── estado.sql
-│   │   └── cidade.sql
-│   ├── database_seeder.py
-│   └── geography_seeder.py
-│
-├── src/
-│   ├── api/
-│   │   └── v1/
-│   │       └── endpoints/
-│   │
-│   ├── controllers/
-│   │
-│   ├── core/
-│   │   ├── auth.py
-│   │   ├── configs.py.example
-│   │   ├── database.py
-│   │   ├── deps.py
-│   │   ├── enums.py
-│   │   └── security.py
-│   │
-│   ├── desafio_fullstack_norven/
-│   │   ├── __init__.py
-│   │   └── main.py
-│   │
-│   ├── models/
-│   │   └── __all_models.py
-│   │
-│   ├── repositories/
-│   ├── schemas/
-│   └── services/
-│
-├── alembic.ini
-├── docker-compose.yml.example
-├── Dockerfile
-├── Makefile
-├── pyproject.toml
-├── uv.lock
-└── README.md
-```
+- Vue.js com Options API
+- TypeScript
+- Pinia
+- Vuetify
 
 ---
 
-# Como executar o projeto
+## Arquitetura
 
-## 1. Pré-requisitos
-
-Para executar o projeto utilizando Docker, certifique-se de possuir:
-
-* Docker
-* Docker Compose
-
-Para verificar:
-
-```bash
-docker --version
-docker compose version
-```
-
-Python e `uv` são utilizados internamente pelo container do backend, portanto não são obrigatórios na máquina host para a execução normal da aplicação.
-
-Caso deseje executar comandos Python diretamente fora do Docker durante o desenvolvimento, também será necessário possuir:
-
-* Python
-* uv
-
----
-
-## 2. Configurar os arquivos da aplicação
-
-Antes de subir os containers, crie os arquivos de configuração a partir dos exemplos fornecidos.
-
-### 2.1 Docker Compose
-
-Copie:
-
-```bash
-cp docker-compose.yml.example docker-compose.yml
-```
-
-No Windows PowerShell, caso o comando `cp` não esteja disponível:
-
-```powershell
-Copy-Item docker-compose.yml.example docker-compose.yml
-```
-
-Edite o `docker-compose.yml` e configure os dados do PostgreSQL:
-
-```text
-POSTGRES_USER
-POSTGRES_PASSWORD
-POSTGRES_DB
-```
-
-Também confira o `healthcheck` do PostgreSQL para garantir que o usuário e banco informados correspondam às configurações acima.
-
-> **Importante:** o arquivo `docker-compose.yml` deve permanecer fora do versionamento caso contenha credenciais reais.
-
----
-
-### 2.2 Configurações da aplicação
-
-Copie:
-
-```bash
-cp src/core/configs.py.example src/core/configs.py
-```
-
-No PowerShell:
-
-```powershell
-Copy-Item src/core/configs.py.example src/core/configs.py
-```
-
-Edite:
-
-```text
-src/core/configs.py
-```
-
-e configure principalmente:
-
-* `DB_URL`
-* `JWT_SECRET`
-
-Para gerar um segredo JWT seguro:
-
-```python
-import secrets
-
-print(secrets.token_urlsafe(32))
-```
-
-> **Importante:** o arquivo `src/core/configs.py` deve permanecer fora do versionamento caso contenha credenciais reais.
-
----
-
-## 3. Configuração da conexão entre os containers
-
-O PostgreSQL e o backend são executados em containers diferentes.
-
-O Docker Compose cria automaticamente uma rede interna para comunicação entre os serviços.
-
-Por isso, dentro do container do backend, a URL do banco **não deve utilizar `localhost`**.
-
-Exemplo:
-
-```text
-postgresql+asyncpg://postgres:senha@postgres:5432/norven
-```
-
-Onde:
-
-```text
-postgresql+asyncpg://
-        │
-        ├── postgres → usuário
-        ├── senha    → senha
-        ├── postgres → nome do serviço PostgreSQL no Docker Compose
-        ├── 5432     → porta
-        └── norven   → banco
-```
-
-O host:
-
-```text
-postgres
-```
-
-corresponde ao serviço definido no `docker-compose.yml`:
-
-```yaml
-services:
-  postgres:
-```
-
-Dentro do container do backend:
-
-```text
-localhost
-```
-
-representaria o próprio container da API, e não o PostgreSQL.
-
----
-
-# 4. Criar e iniciar os containers
-
-Na raiz da pasta `backend`, execute:
-
-```bash
-docker compose up -d --build
-```
-
-O comando:
-
-* cria a imagem do backend;
-* inicia o container da API;
-* inicia o PostgreSQL;
-* cria a rede entre os serviços;
-* cria o volume persistente do banco.
-
-Para verificar:
-
-```bash
-docker compose ps
-```
-
-O resultado deve apresentar os dois serviços em execução, por exemplo:
-
-```text
-backend     running
-postgres    running
-```
-
----
-
-## Visualizar logs da API
-
-```bash
-docker compose logs -f backend
-```
-
-## Visualizar logs do PostgreSQL
-
-```bash
-docker compose logs -f postgres
-```
-
----
-
-## Parar os containers
-
-```bash
-docker compose down
-```
-
-Os dados do PostgreSQL permanecem armazenados no volume.
-
----
-
-## Parar e remover os dados persistidos
-
-```bash
-docker compose down -v
-```
-
-> **Atenção:** o parâmetro `-v` remove também o volume do PostgreSQL. Todos os dados armazenados no banco serão apagados.
-
-Após remover o volume, será necessário executar novamente as migrations e os seeders.
-
----
-
-# 5. Executar as migrations
-
-**Esta etapa é obrigatória na primeira execução do projeto.**
-
-Com os containers em funcionamento:
-
-```bash
-docker compose exec backend uv run alembic upgrade head
-```
-
-As migrations são responsáveis pela criação e alteração da estrutura do banco de dados.
-
-Atualmente, as principais tabelas criadas são:
-
-```text
-pais
-estado
-cidade
-
-enderecos
-contatos
-funcionarios
-fornecedores
-
-categorias
-unidades_medidas
-informacoes_nutricionais
-produtos
-
-lotes
-entradas
-estoques
-saidas
-```
-
-Além delas, o Alembic cria:
-
-```text
-alembic_version
-```
-
-Essa tabela registra qual versão das migrations está aplicada ao banco.
-
----
-
-## Verificar migration atual
-
-```bash
-docker compose exec backend uv run alembic current
-```
-
----
-
-## Ver histórico de migrations
-
-```bash
-docker compose exec backend uv run alembic history
-```
-
----
-
-# 6. Executar os seeders
-
-**Esta etapa também é obrigatória na primeira execução.**
-
-Após as migrations:
-
-```bash
-docker compose exec backend uv run python -m seeders.database_seeder
-```
-
-Atualmente, o `DatabaseSeeder` executa o seeder responsável pelos dados geográficos.
-
-A ordem é:
-
-```text
-pais
- ↓
-estado
- ↓
-cidade
-```
-
-A ordem é necessária devido às relações de chave estrangeira.
-
-Os dados utilizados estão em:
-
-```text
-seeders/data/
-├── pais.sql
-├── estado.sql
-└── cidade.sql
-```
-
-O seeder:
-
-* popula países;
-* popula estados;
-* popula cidades;
-* respeita as chaves estrangeiras;
-* pode atualizar registros já existentes;
-* pode ser executado novamente;
-* ajusta as sequences do PostgreSQL após a importação.
-
----
-
-# 7. Acessar a API
-
-Após:
-
-```bash
-docker compose up -d --build
-```
-
-e a execução das migrations e seeders, a API estará disponível em:
-
-```text
-http://localhost:8000
-```
-
-Swagger:
-
-```text
-http://localhost:8000/docs
-```
-
-ReDoc:
-
-```text
-http://localhost:8000/redoc
-```
-
-Não é necessário executar o Uvicorn manualmente na máquina host, pois a API é iniciada dentro do container `backend`.
-
----
-
-# Resumo para primeira execução
-
-Para executar o projeto do zero:
-
-```bash
-# 1. Criar arquivos de configuração
-cp docker-compose.yml.example docker-compose.yml
-cp src/core/configs.py.example src/core/configs.py
-
-# 2. Ajustar as credenciais nos arquivos copiados
-
-# 3. Criar e iniciar os containers
-docker compose up -d --build
-
-# 4. Executar as migrations - OBRIGATÓRIO
-docker compose exec backend uv run alembic upgrade head
-
-# 5. Executar os seeders - OBRIGATÓRIO
-docker compose exec backend uv run python -m seeders.database_seeder
-```
-
-Depois:
-
-```text
-http://localhost:8000/docs
-```
-
-O fluxo completo é:
-
-```text
-Configuração
-     ↓
-Docker Compose
-     ↓
-┌─────────────────────┐
-│                     │
-↓                     ↓
-Backend              PostgreSQL
-FastAPI              Banco
-│                     ↑
-└──── rede Docker ────┘
-     ↓
-Migrations
-     ↓
-Seeders
-     ↓
-API disponível
-```
-
----
-
-# Desenvolvimento
-
-O projeto utiliza um volume para compartilhar os arquivos do backend com o container durante o desenvolvimento.
-
-Dessa forma, alterações feitas no código local podem ser detectadas pelo Uvicorn utilizando:
-
-```text
---reload
-```
-
-Não é necessário reconstruir a imagem após cada alteração em arquivos Python.
-
-Uma reconstrução pode ser necessária quando houver mudanças em itens como:
-
-* `pyproject.toml`;
-* `uv.lock`;
-* `Dockerfile`;
-* dependências do sistema.
-
-Nesse caso:
-
-```bash
-docker compose up -d --build
-```
-
----
-
-# Migrations durante o desenvolvimento
-
-Após criar ou alterar models do SQLAlchemy:
-
-```bash
-docker compose exec backend uv run alembic revision --autogenerate -m "descricao da migration"
-```
-
-O Alembic compara:
-
-```text
-Models SQLAlchemy
-       ↓
-DBBaseModel.metadata
-       ↓
-estrutura atual do PostgreSQL
-       ↓
-nova migration
-```
-
-Todos os models são centralizados em:
-
-```text
-src/models/__all_models.py
-```
-
-O `env.py` do Alembic importa esse módulo para garantir que todos os models sejam registrados no metadata do SQLAlchemy.
-
-Após gerar uma migration, revise manualmente o arquivo criado em:
-
-```text
-migrations/versions/
-```
-
-O `--autogenerate` cria uma proposta de migration e pode identificar alterações que não devem ser aplicadas.
-
-Depois de revisar:
-
-```bash
-docker compose exec backend uv run alembic upgrade head
-```
-
----
-
-# Banco de dados
-
-O projeto utiliza SQLAlchemy de forma assíncrona através de:
-
-```text
-PostgreSQL
-    +
-asyncpg
-```
-
-A configuração da conexão está em:
-
-```text
-src/core/database.py
-```
-
-As configurações gerais estão em:
-
-```text
-src/core/configs.py
-```
-
----
-
-# Arquitetura do backend
-
-O backend utiliza separação por responsabilidades:
+O backend utiliza separação de responsabilidades por camadas:
 
 ```text
 HTTP Request
@@ -616,88 +72,731 @@ PostgreSQL
 
 Responsáveis pela camada HTTP:
 
-* rotas;
-* parâmetros;
-* dependências do FastAPI;
-* schemas de entrada e saída;
-* status HTTP.
+- definição das rotas;
+- parâmetros de path e query;
+- dependências do FastAPI;
+- autenticação;
+- schemas de entrada e saída;
+- códigos de status HTTP.
 
 ### Controllers
 
-Coordenam a chamada da funcionalidade solicitada pelo endpoint.
+Coordenam a chamada da funcionalidade solicitada pelo endpoint e encaminham a execução para a camada de serviço.
 
 ### Services
 
-Responsáveis pelas regras de negócio da aplicação.
+Concentram as regras de negócio, validações entre entidades e controle das transações que precisam ser executadas de forma atômica.
 
 ### Repositories
 
-Responsáveis pelo acesso e persistência dos dados.
+Responsáveis pelas consultas e operações de persistência utilizando SQLAlchemy.
 
 ### Models
 
-Representam as tabelas e relações do PostgreSQL através do SQLAlchemy.
+Representam as tabelas, constraints e relacionamentos do PostgreSQL.
 
 ### Schemas
 
-Representam os dados de entrada e saída da API utilizando Pydantic.
+Funcionam como DTOs da API por meio do Pydantic, validando dados de entrada, atualização, filtros e respostas.
+
+---
+
+## Estrutura principal
+
+```text
+backend/
+├── migrations/
+│   └── versions/
+├── seeders/
+│   ├── data/
+│   │   ├── pais.sql
+│   │   ├── estado.sql
+│   │   └── cidade.sql
+│   ├── database_seeder.py
+│   └── geography_seeder.py
+├── src/
+│   ├── api/
+│   │   └── v1/
+│   │       └── endpoints/
+│   ├── controllers/
+│   ├── core/
+│   │   ├── auth.py
+│   │   ├── configs.py.example
+│   │   ├── database.py
+│   │   ├── deps.py
+│   │   ├── enums.py
+│   │   └── security.py
+│   ├── models/
+│   │   └── __all_models.py
+│   ├── repositories/
+│   ├── schemas/
+│   ├── services/
+│   └── main.py
+├── tests/
+│   ├── conftest.py
+│   └── integration/
+│       └── api/
+│           ├── helpers_movimentacoes.py
+│           ├── payloads.py
+│           ├── test_auth.py
+│           ├── test_categorias.py
+│           ├── test_contatos.py
+│           ├── test_enderecos.py
+│           ├── test_estoque.py
+│           ├── test_entradas.py
+│           ├── test_fornecedores.py
+│           ├── test_informacoes_nutricionais.py
+│           ├── test_lotes.py
+│           ├── test_produtos.py
+│           ├── test_saida.py
+│           ├── test_unidades_medidas.py
+│           └── test_usuarios.py
+├── alembic.ini
+├── docker-compose.yml.example
+├── docker-compose.test.yml
+├── Dockerfile
+├── Makefile
+├── pyproject.toml
+├── pytest.ini
+├── uv.lock
+└── README.md
+```
+
+> A árvore acima apresenta a estrutura principal do projeto. Arquivos auxiliares e `__init__.py` foram omitidos para facilitar a leitura.
+
+---
+
+# Como executar o projeto
+
+## 1. Pré-requisitos
+
+Para executar o projeto utilizando Docker:
+
+- Docker
+- Docker Compose
+
+Verifique a instalação:
+
+```bash
+docker --version
+docker compose version
+```
+
+Python e `uv` são utilizados dentro do container do backend e não são obrigatórios na máquina host para a execução normal da aplicação.
+
+Para executar comandos Python diretamente no host durante o desenvolvimento, também será necessário possuir Python e `uv`.
+
+---
+
+## 2. Configurar os arquivos da aplicação
+
+### 2.1 Docker Compose
+
+Crie o arquivo de configuração a partir do exemplo:
+
+```bash
+cp docker-compose.yml.example docker-compose.yml
+```
+
+No PowerShell:
+
+```powershell
+Copy-Item docker-compose.yml.example docker-compose.yml
+```
+
+Configure no `docker-compose.yml` os dados do PostgreSQL, incluindo:
+
+```text
+POSTGRES_USER
+POSTGRES_PASSWORD
+POSTGRES_DB
+```
+
+Também confira o `healthcheck` do serviço PostgreSQL.
+
+> **Importante:** não versione credenciais reais.
+
+### 2.2 Configurações do backend
+
+Crie o arquivo de configuração:
+
+```bash
+cp src/core/configs.py.example src/core/configs.py
+```
+
+No PowerShell:
+
+```powershell
+Copy-Item src/core/configs.py.example src/core/configs.py
+```
+
+Configure os valores necessários, principalmente a URL de conexão com o banco e o segredo JWT.
+
+Exemplo de geração de segredo:
+
+```python
+import secrets
+
+print(secrets.token_urlsafe(32))
+```
+
+> **Importante:** `src/core/configs.py` não deve conter segredos versionados.
+
+---
+
+## 3. Comunicação entre os containers
+
+O PostgreSQL e o backend executam em containers diferentes e se comunicam pela rede criada pelo Docker Compose.
+
+Por isso, dentro do container da API, a conexão com o PostgreSQL não deve utilizar `localhost`.
+
+Exemplo:
+
+```text
+postgresql+asyncpg://postgres:senha@postgres:5432/norven
+```
+
+Nesse exemplo, o segundo `postgres` representa o nome do serviço do banco no Docker Compose:
+
+```yaml
+services:
+  postgres:
+```
+
+Dentro do container do backend, `localhost` apontaria para o próprio container da API.
+
+---
+
+## 4. Criar e iniciar os containers
+
+Na raiz de `backend/`:
+
+```bash
+docker compose up -d --build
+```
+
+O comando:
+
+- cria a imagem do backend;
+- inicia a API;
+- inicia o PostgreSQL;
+- cria a rede entre os serviços;
+- configura o volume persistente do banco.
+
+Verifique os serviços:
+
+```bash
+docker compose ps
+```
+
+### Logs do backend
+
+```bash
+docker compose logs -f backend
+```
+
+### Logs do PostgreSQL
+
+```bash
+docker compose logs -f postgres
+```
+
+### Parar os containers
+
+```bash
+docker compose down
+```
+
+Os dados permanecem no volume do PostgreSQL.
+
+### Remover containers e dados persistidos
+
+```bash
+docker compose down -v
+```
+
+> **Atenção:** `-v` remove o volume do PostgreSQL. Depois disso, migrations e seeders deverão ser executados novamente.
+
+---
+
+## 5. Executar migrations
+
+Esta etapa é obrigatória na primeira execução:
+
+```bash
+docker compose exec backend uv run alembic upgrade head
+```
+
+As principais tabelas da aplicação são:
+
+```text
+pais
+estado
+cidade
+enderecos
+contatos
+funcionarios
+fornecedores
+categorias
+unidades_medidas
+informacoes_nutricionais
+produtos
+lotes
+entradas
+estoques
+saidas
+```
+
+O Alembic também mantém a tabela:
+
+```text
+alembic_version
+```
+
+### Verificar migration atual
+
+```bash
+docker compose exec backend uv run alembic current
+```
+
+### Ver histórico de migrations
+
+```bash
+docker compose exec backend uv run alembic history
+```
+
+---
+
+## 6. Executar seeders
+
+Após as migrations:
+
+```bash
+docker compose exec backend uv run python -m seeders.database_seeder
+```
+
+Os dados geográficos seguem a ordem:
+
+```text
+pais
+ ↓
+estado
+ ↓
+cidade
+```
+
+Os arquivos utilizados estão em:
+
+```text
+seeders/data/
+├── pais.sql
+├── estado.sql
+└── cidade.sql
+```
+
+O processo de seed:
+
+- popula os dados geográficos;
+- respeita as dependências de chave estrangeira;
+- pode atualizar registros já existentes;
+- pode ser executado novamente;
+- ajusta as sequences do PostgreSQL;
+- prepara os dados iniciais necessários pela aplicação.
+
+---
+
+## 7. Acessar a API
+
+Com os containers ativos e o banco preparado:
+
+```text
+http://localhost:8000
+```
+
+Swagger:
+
+```text
+http://localhost:8000/docs
+```
+
+ReDoc:
+
+```text
+http://localhost:8000/redoc
+```
+
+Não é necessário iniciar o Uvicorn manualmente no host quando o backend estiver sendo executado pelo Docker.
 
 ---
 
 # Autenticação
 
-A estrutura inicial de autenticação utiliza:
+A autenticação utiliza:
 
-* OAuth2 Bearer Token;
-* JWT;
-* bcrypt para hash de senhas;
-* dependências do FastAPI;
-* recuperação do usuário autenticado pelo token.
+- OAuth2;
+- Bearer Token;
+- JWT;
+- bcrypt para hash e validação de senha;
+- recuperação do usuário autenticado por dependência do FastAPI.
 
-Os principais arquivos estão em:
+Fluxo:
 
 ```text
-src/core/auth.py
-src/core/deps.py
-src/core/security.py
+e-mail + senha
+     ↓
+validação das credenciais
+     ↓
+JWT
+     ↓
+Bearer Token
+     ↓
+endpoint autenticado
 ```
 
-O fluxo esperado é:
+O endpoint de login utiliza o fluxo OAuth2 Password e recebe o e-mail no campo `username`.
+
+As rotas protegidas utilizam o usuário recuperado a partir do token para identificar o responsável pelas operações auditáveis.
+
+---
+
+# Regras de negócio principais
+
+## Usuários
+
+- cadastro com nome, e-mail, senha, contato e endereço;
+- endereço vinculado a município;
+- consulta de estado e município baseada nos dados geográficos;
+- e-mail único;
+- senha armazenada utilizando hash;
+- autenticação via JWT.
+
+## Fornecedores
+
+- CNPJ único;
+- cadastro e atualização com endereço e contato;
+- reutilização de endereço ou contato quando os dados já existentes forem equivalentes.
+
+## Produtos
+
+- nome único;
+- código identificador;
+- preço de venda atual;
+- categoria;
+- unidade de medida;
+- indicação de produto perecível;
+- informação nutricional opcional;
+- filtros e paginação;
+- status calculado a partir de estoque e validade.
+
+## Lotes
+
+- vinculados a um produto;
+- número único dentro do mesmo produto;
+- produtos perecíveis exigem validade na criação do lote;
+- produto e validade do lote não são alterados depois da criação;
+- produtos não perecíveis podem possuir validade nula.
+
+## Entradas
+
+- vinculadas a produto, fornecedor, lote e usuário responsável;
+- aceitam lote existente ou criação de novo lote durante a entrada;
+- registram quantidade, custo, tipo, observação e data;
+- criam o estoque correspondente automaticamente;
+- alteração de quantidade atualiza o saldo do estoque;
+- alterações que produziriam saldo inválido são bloqueadas;
+- localização física do estoque pode ser informada e atualizada;
+- transações não possuem exclusão.
+
+## Estoques
+
+- são originados por entradas;
+- mantêm o saldo atual;
+- possuem corredor, prateleira e seção;
+- permitem filtros por produto, lote e saldo;
+- utilizam bloqueio de linha (`FOR UPDATE`) nos fluxos em que o saldo será alterado;
+- não são criados diretamente por endpoint público.
+
+## Saídas
+
+- vinculadas ao estoque, produto e usuário responsável;
+- reduzem o saldo automaticamente;
+- não permitem quantidade superior ao saldo disponível;
+- não permitem data anterior à entrada correspondente;
+- saídas do tipo `VENDA` podem utilizar preço informado ou o preço atual do produto;
+- outros tipos de saída não possuem preço de venda;
+- edição da quantidade recalcula o saldo do estoque;
+- transações não possuem exclusão.
+
+## Auditoria e histórico
+
+Entradas e saídas registram:
+
+- usuário responsável;
+- data e hora;
+- tipo de movimentação;
+- quantidade;
+- produto e lote relacionados.
+
+O histórico de transações do produto reúne entradas e saídas e permite filtros para consulta e rastreabilidade.
+
+---
+
+# Paginação e filtros
+
+As listagens principais utilizam paginação por `page` e `per_page`.
+
+Exemplo:
 
 ```text
-Login
- ↓
-e-mail + senha
- ↓
-validação da senha com bcrypt
- ↓
-JWT
- ↓
-Bearer Token
- ↓
-endpoints autenticados
+GET /api/v1/produtos?page=1&per_page=20
+```
+
+Os recursos implementam filtros próprios de acordo com o contexto, como:
+
+- busca textual;
+- produto;
+- fornecedor;
+- usuário;
+- lote;
+- tipo de movimentação;
+- quantidade mínima e máxima;
+- intervalo de preço;
+- período de datas;
+- status;
+- saldo disponível.
+
+---
+
+# Testes automatizados
+
+O projeto possui testes de integração da API utilizando banco PostgreSQL separado do ambiente de desenvolvimento.
+
+A suíte cobre o fluxo HTTP completo:
+
+```text
+Request
+   ↓
+Endpoint
+   ↓
+Controller
+   ↓
+Service
+   ↓
+Repository
+   ↓
+PostgreSQL de teste
+```
+
+Os testes validam, entre outros cenários:
+
+- autenticação e proteção de rotas;
+- criação, consulta, edição, filtros e paginação;
+- validações de unicidade;
+- relacionamentos entre entidades;
+- regras de perecibilidade e validade;
+- criação automática de estoque;
+- atualização de saldo por entrada e saída;
+- bloqueio de estoque negativo;
+- auditoria das movimentações;
+- ausência de exclusão para entradas e saídas;
+- histórico de transações.
+
+## Ambiente de testes
+
+O ambiente utiliza um PostgreSQL exclusivo para testes, evitando alterações no banco de desenvolvimento.
+
+Para subir o ambiente:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.test.yml up -d --build
+```
+
+## Executar todos os testes de integração
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.test.yml exec backend uv run pytest tests/integration/api -v
+```
+
+## Executar um módulo específico
+
+Entradas:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.test.yml exec backend uv run pytest tests/integration/api/test_entradas.py -v
+```
+
+Estoques:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.test.yml exec backend uv run pytest tests/integration/api/test_estoque.py -v
+```
+
+Saídas:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.test.yml exec backend uv run pytest tests/integration/api/test_saida.py -v
+```
+
+Também é possível executar qualquer outro arquivo individual presente em `tests/integration/api/`.
+
+> Antes de uma entrega ou commit de estabilização, recomenda-se executar a suíte completa de integração.
+
+---
+
+# Desenvolvimento
+
+O backend utiliza volume do Docker para refletir alterações locais no container durante o desenvolvimento.
+
+Com o Uvicorn em modo `--reload`, mudanças em arquivos Python podem ser detectadas sem reconstruir a imagem.
+
+Uma nova build pode ser necessária quando houver mudanças em:
+
+- `pyproject.toml`;
+- `uv.lock`;
+- `Dockerfile`;
+- dependências do sistema.
+
+Nesse caso:
+
+```bash
+docker compose up -d --build
 ```
 
 ---
 
-# Seeders e Factories
+# Migrations durante o desenvolvimento
 
-Os **seeders** são utilizados para inserir dados reais ou necessários para o funcionamento inicial da aplicação.
+Após criar ou alterar models SQLAlchemy:
 
-Atualmente:
-
-```text
-DatabaseSeeder
-└── GeographySeeder
-    ├── países
-    ├── estados
-    └── cidades
+```bash
+docker compose exec backend uv run alembic revision --autogenerate -m "descricao da migration"
 ```
 
-Factories poderão ser adicionadas posteriormente para geração de dados fictícios destinados principalmente a:
+O Alembic compara os models registrados no metadata com a estrutura atual do PostgreSQL.
 
-* desenvolvimento;
-* testes automatizados.
+Todos os models utilizados pelas migrations devem estar registrados por meio de:
+
+```text
+src/models/__all_models.py
+```
+
+Após gerar uma migration, revise manualmente o arquivo em:
+
+```text
+migrations/versions/
+```
+
+Depois da revisão:
+
+```bash
+docker compose exec backend uv run alembic upgrade head
+```
+
+> O `--autogenerate` cria uma proposta de migration. O arquivo gerado deve ser revisado antes da aplicação.
+
+---
+
+# Banco de dados
+
+O projeto utiliza SQLAlchemy assíncrono com PostgreSQL por meio do `asyncpg`.
+
+A configuração da conexão está centralizada em:
+
+```text
+src/core/database.py
+```
+
+As configurações da aplicação ficam em:
+
+```text
+src/core/configs.py
+```
+
+---
+
+# Convenções Git da Norven
+
+O projeto segue o padrão de nomenclatura definido pela Norven.
+
+## Branches
+
+Branches variáveis seguem:
+
+```text
+<type>/[<id-task>/]<task-name>
+```
+
+Tipos permitidos para branches de trabalho:
+
+```text
+feat
+fix
+```
+
+Exemplos:
+
+```text
+feat/implementacao-de-autenticacao
+fix/correcao-de-fluxo-de-estoque
+```
+
+O nome da task deve utilizar `kebab-case`.
+
+## Commits
+
+Commits seguem:
+
+```text
+<type>: <description>
+```
+
+Tipos previstos:
+
+```text
+feat
+fix
+refactor
+docs
+test
+build
+review
+```
+
+Exemplos:
+
+```text
+feat: implementar autenticação de usuário
+fix: corrigir atualização do saldo de estoque
+test: adicionar testes de integração para movimentações
+docs: atualizar instruções de execução do projeto
+```
+
+---
+
+# Resumo para primeira execução
+
+```bash
+# 1. Criar os arquivos locais de configuração
+cp docker-compose.yml.example docker-compose.yml
+cp src/core/configs.py.example src/core/configs.py
+
+# 2. Ajustar as configurações e credenciais
+
+# 3. Subir os containers
+docker compose up -d --build
+
+# 4. Executar migrations
+docker compose exec backend uv run alembic upgrade head
+
+# 5. Executar seeders
+docker compose exec backend uv run python -m seeders.database_seeder
+```
+
+Depois acesse:
+
+```text
+http://localhost:8000/docs
+```
 
 ---
 
@@ -705,143 +804,58 @@ Factories poderão ser adicionadas posteriormente para geração de dados fictí
 
 🚧 Projeto em desenvolvimento.
 
-## Infraestrutura
+## Backend
 
-* [x] Configuração inicial do backend
-* [x] PostgreSQL com Docker
-* [x] Container próprio para o backend
-* [x] Docker Compose para backend + PostgreSQL
-* [x] SQLAlchemy assíncrono
-* [x] Alembic
-* [x] Seeders
+- [x] Infraestrutura Docker
+- [x] PostgreSQL
+- [x] SQLAlchemy assíncrono
+- [x] Alembic
+- [x] Seeders
+- [x] Autenticação JWT
+- [x] Models
+- [x] Schemas / DTOs
+- [x] Repositories
+- [x] Services
+- [x] Controllers
+- [x] Endpoints
+- [x] Paginação e filtros
+- [x] Entradas de estoque
+- [x] Estoque atual
+- [x] Saídas de estoque
+- [x] Histórico de transações
 
-## Dados geográficos
+## Testes de integração implementados
 
-* [x] Model de país
-* [x] Model de estado
-* [x] Model de cidade
-* [x] Migration de país, estado e cidade
-* [x] Seeder de países
-* [x] Seeder de estados
-* [x] Seeder de cidades
-
-## Models
-
-* [x] Endereços
-* [x] Usuários / Funcionários
-* [x] Fornecedores
-* [x] Contatos
-* [x] Categorias
-* [x] Unidades de medida
-* [x] Produtos
-* [x] Informações nutricionais
-* [x] Lotes
-* [x] Entradas
-* [x] Estoques
-* [x] Saídas
-
-## Schemas
-
-* [x] Endereços
-* [x] Usuários / Funcionários
-* [x] Fornecedores
-* [x] Contatos
-* [x] Categorias
-* [x] Unidades de medida
-* [x] Produtos
-* [x] Informações nutricionais
-* [x] Lotes
-* [x] Entradas
-* [x] Estoques
-* [x] Saídas
-
-## Migrations
-
-* [x] Endereços
-* [x] Usuários / Funcionários
-* [x] Fornecedores
-* [x] Contatos
-* [x] Categorias
-* [x] Unidades de medida
-* [x] Produtos
-* [x] Informações nutricionais
-* [x] Lotes
-* [x] Entradas
-* [x] Estoques
-* [x] Saídas
-
-> Sempre revisar o modelo lógico e o arquivo gerado pelo Alembic antes de executar uma nova migration.
-
-## Endpoints
-
-* [x] Endereços
-* [x] Usuários / Funcionários
-* [x] Contatos
-* [x] Categorias
-* [x] Unidades de medida
-* [x] Produtos
-* [x] Informações nutricionais
-* [x] Fornecedores
-* [x] Lotes
-* [x] Entradas
-* [x] Estoques
-* [x] Saídas
-
-## Controllers
-
-* [x] Endereços
-* [x] Usuários / Funcionários
-* [x] Contatos
-* [x] Categorias
-* [x] Unidades de medida
-* [x] Produtos
-* [x] Informações nutricionais
-* [x] Fornecedores
-* [x] Lotes
-* [x] Entradas
-* [x] Estoques
-* [x] Saídas
-
-## Services
-
-* [x] Endereços
-* [x] Usuários / Funcionários
-* [x] Contatos
-* [x] Categorias
-* [x] Unidades de medida
-* [x] Produtos
-* [x] Informações nutricionais
-* [x] Fornecedores
-* [x] Lotes
-* [x] Entradas
-* [x] Estoques
-* [x] Saídas
-
-## Repositories
-
-* [x] Endereços
-* [x] Usuários / Funcionários
-* [x] Contatos
-* [x] Categorias
-* [x] Unidades de medida
-* [x] Produtos
-* [x] Informações nutricionais
-* [x] Fornecedores
-* [x] Lotes
-* [x] Entradas
-* [x] Estoques
-* [x] Saídas
+- [x] Autenticação
+- [x] Categorias
+- [x] Contatos
+- [x] Endereços
+- [x] Fornecedores
+- [x] Informações nutricionais
+- [x] Lotes
+- [x] Produtos
+- [x] Unidades de medida
+- [x] Usuários / Funcionários
+- [x] Entradas
+- [x] Estoques
+- [x] Saídas
 
 ## Qualidade
 
-* [ ] Testes automatizados
-* [ ] Tratamento global de exceções
+- [x] Banco de testes separado
+- [x] Testes de integração HTTP
+- [x] Transações para operações críticas de estoque
+- [x] Bloqueio pessimista de estoque nos fluxos de movimentação
+- [ ] Testes unitários
+- [ ] Tratamento global de exceções
 
 ## Frontend
 
-* [ ] Vue.js
-* [ ] TypeScript
-* [ ] Integração com a API
+- [ ] Vue.js com Options API
+- [ ] TypeScript
+- [ ] Pinia
+- [ ] Vuetify
+- [ ] Integração com a API
 
 ---
 

@@ -1,29 +1,46 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import LoginView from '@/views/LoginView.vue'
-import InicioView from '@/views/InicioView.vue'
+import AuthLayout from '@/layouts/AuthLayout.vue'
+import AppLayout from '@/layouts/AppLayout.vue'
 
 import { useAuthStore } from '@/stores/auth'
+
+import InicioView from '@/views/InicioView.vue'
+import LoginView from '@/views/LoginView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'inicio',
-      component: InicioView,
+      component: AppLayout,
       meta: {
         requiresAuth: true,
       },
+
+      children: [
+        {
+          path: '',
+          name: 'inicio',
+          component: InicioView,
+        },
+      ],
     },
 
     {
       path: '/login',
-      name: 'login',
-      component: LoginView,
-      meta: {
-        guestOnly: true,
-      },
+      component: AuthLayout,
+      
+      children: [
+        {
+          path: '',
+          name: 'login',
+          component: LoginView,
+          meta: {
+            guestOnly: true,
+          },
+        },
+      ],
     },
 
     {
@@ -36,7 +53,10 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore()
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+  const requiresAuth = to.matched.some((route) => route.meta.requiresAuth)
+  const guestOnly = to.matched.some((route) => route.meta.guestOnly)
+
+  if (requiresAuth && !authStore.isAuthenticated) {
     return {
       name: 'login',
 
@@ -46,7 +66,7 @@ router.beforeEach((to) => {
     }
   }
 
-  if (to.meta.guestOnly && authStore.isAuthenticated) {
+  if (guestOnly && authStore.isAuthenticated) {
     return {
       name: 'inicio',
     }

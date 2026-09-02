@@ -36,21 +36,26 @@ async def get_current_user(db: Session = Depends(get_session), token: str = Depe
             options={"verify_aud": False}
         )
 
-        username: str = payload.get("sub")
+        subject = payload.get("sub")
 
-        if username is None:
+        if subject is None:
             raise credentials_exception
 
-        token_data = TokenData(username=username)
+        token_data = TokenData(username=str(subject))
+
+        try:
+            usuario_id = int(token_data.username)
+        except (TypeError, ValueError):
+            raise credentials_exception
     except JWTError:
         raise credentials_exception
 
-    async with db as session:
-        query = select(UsuarioModel).filter(UsuarioModel.id == int(token_data.username))
-        result = await session.execute(query)
-        user: UsuarioModel = result.scalars().unique().one_or_none()
+    query = select(UsuarioModel).where(UsuarioModel.id == usuario_id)
+    result = await db.execute(query)
 
-        if user is None:
-            raise credentials_exception
-        
-        return user
+    user = result.scalars().unique().one_or_none()
+
+    if user is None:
+        raise credentials_exception
+
+    return user

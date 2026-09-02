@@ -57,6 +57,36 @@ services:
         "--app-dir",
         "src"
       ]
+  
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+
+    container_name: norven_frontend
+
+    ports:
+      - "5173:5173"
+
+    environment:
+      VITE_API_BASE_URL: "http://localhost:8000/api/v1"
+
+    depends_on:
+      - backend
+
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+
+    command:
+      [
+        "npm",
+        "run",
+        "dev",
+        "--",
+        "--host",
+        "0.0.0.0"
+      ]
 
 volumes:
   postgres_data:

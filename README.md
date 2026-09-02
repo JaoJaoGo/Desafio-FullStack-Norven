@@ -2,7 +2,7 @@
 
 Projeto desenvolvido como parte do desafio FullStack da **Norven** para gerenciamento de produtos, estoque e movimentações.
 
-Nesta etapa, o backend e o banco de dados estão implementados e sendo validados por testes de integração. O frontend será desenvolvido posteriormente.
+Nesta etapa, o backend, o banco de dados e o frontend estão implementados. O backend é validado por testes de integração, e o frontend está integrado com a API.
 
 ## Tecnologias
 
@@ -39,12 +39,12 @@ Nesta etapa, o backend e o banco de dados estão implementados e sendo validados
 
 ### Frontend
 
-Planejado conforme o desafio:
-
 - Vue.js com Options API
 - TypeScript
 - Pinia
 - Vuetify
+- Vue Router
+- Vite
 
 ---
 
@@ -162,6 +162,37 @@ backend/
 └── README.md
 ```
 
+### Frontend
+
+```text
+frontend/
+├── src/
+│   ├── plugins/
+│   │   └── vuetify.ts
+│   ├── router/
+│   │   └── index.ts
+│   ├── services/
+│   │   ├── api.ts
+│   │   └── authService.ts
+│   ├── stores/
+│   │   └── auth.ts
+│   ├── types/
+│   │   └── auth.ts
+│   ├── views/
+│   │   ├── InicioView.vue
+│   │   └── LoginView.vue
+│   ├── App.vue
+│   └── main.ts
+├── .env.example
+├── ._gitignore
+├── Dockerfile
+├── eslint.config.mjs
+├── package.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
+```
+
 > A árvore acima apresenta a estrutura principal do projeto. Arquivos auxiliares e `__init__.py` foram omitidos para facilitar a leitura.
 
 ---
@@ -242,6 +273,28 @@ print(secrets.token_urlsafe(32))
 
 > **Importante:** `src/core/configs.py` não deve conter segredos versionados.
 
+### 2.3 Configurações do frontend
+
+Crie o arquivo de configuração:
+
+```bash
+cp .env.example .env
+```
+
+No PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Configure a URL da API:
+
+```text
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+> **Importante:** `.env` não deve conter segredos versionados.
+
 ---
 
 ## 3. Comunicação entre os containers
@@ -269,7 +322,7 @@ Dentro do container do backend, `localhost` apontaria para o próprio container 
 
 ## 4. Criar e iniciar os containers
 
-Na raiz de `backend/`:
+Na raiz do projeto:
 
 ```bash
 docker compose up -d --build
@@ -278,7 +331,9 @@ docker compose up -d --build
 O comando:
 
 - cria a imagem do backend;
+- cria a imagem do frontend;
 - inicia a API;
+- inicia o frontend;
 - inicia o PostgreSQL;
 - cria a rede entre os serviços;
 - configura o volume persistente do banco.
@@ -299,6 +354,12 @@ docker compose logs -f backend
 
 ```bash
 docker compose logs -f postgres
+```
+
+### Logs do frontend
+
+```bash
+docker compose logs -f frontend
 ```
 
 ### Parar os containers
@@ -405,9 +466,17 @@ O processo de seed:
 
 ---
 
-## 7. Acessar a API
+## 7. Acessar a aplicação
 
 Com os containers ativos e o banco preparado:
+
+### Frontend
+
+```text
+http://localhost:5173
+```
+
+### API
 
 ```text
 http://localhost:8000
@@ -425,7 +494,113 @@ ReDoc:
 http://localhost:8000/redoc
 ```
 
-Não é necessário iniciar o Uvicorn manualmente no host quando o backend estiver sendo executado pelo Docker.
+Não é necessário iniciar o Uvicorn ou o Vite manualmente no host quando os serviços estiverem sendo executados pelo Docker.
+
+---
+
+# Frontend
+
+## Arquitetura
+
+O frontend utiliza Vue.js com Options API e segue uma estrutura modular:
+
+```text
+Vue Component
+     ↓
+Pinia Store
+     ↓
+Service
+     ↓
+API Request
+     ↓
+FastAPI Backend
+```
+
+### Componentes
+
+Responsáveis pela camada de apresentação:
+
+- definição da interface;
+- eventos do usuário;
+- estado local;
+- integração com stores do Pinia.
+
+### Stores (Pinia)
+
+Gerenciam o estado global da aplicação:
+
+- autenticação (token, usuário);
+- cache de dados;
+- ações assíncronas;
+- persistência no localStorage.
+
+### Services
+
+Encapsulam chamadas à API:
+
+- comunicação HTTP;
+- tratamento de erros;
+- serialização de dados;
+- gerenciamento de tokens.
+
+### Router (Vue Router)
+
+Gerencia a navegação:
+
+- definição de rotas;
+- proteção de rotas (autenticação);
+- redirecionamentos;
+- parâmetros de rota.
+
+## Integração com a API
+
+O frontend se comunica com a API via HTTP utilizando:
+
+- `fetch` nativo do navegador;
+- Bearer Token no header `Authorization`;
+- tratamento de erros centralizado;
+- armazenamento do token no localStorage.
+
+### Fluxo de Autenticação
+
+```text
+Login
+     ↓
+POST /api/v1/auth/login
+     ↓
+Recebe JWT
+     ↓
+Armazena no localStorage
+     ↓
+Envia em todas as requisições
+```
+
+### Proteção de Rotas
+
+O Vue Router utiliza guards para proteger rotas:
+
+- Rotas com `requiresAuth`: exigem autenticação
+- Rotas com `guestOnly`: apenas para usuários não autenticados
+- Redirecionamento automático para login quando necessário
+
+## Desenvolvimento
+
+O frontend utiliza volume do Docker para refletir alterações locais no container durante o desenvolvimento.
+
+Com o Vite em modo `--reload`, mudanças em arquivos podem ser detectadas sem reconstruir a imagem.
+
+Uma nova build pode ser necessária quando houver mudanças em:
+
+- `package.json`;
+- `package-lock.json`;
+- `Dockerfile`;
+- dependências do sistema.
+
+Nesse caso:
+
+```bash
+docker compose up -d --build
+```
 
 ---
 
@@ -456,6 +631,16 @@ endpoint autenticado
 O endpoint de login utiliza o fluxo OAuth2 Password e recebe o e-mail no campo `username`.
 
 As rotas protegidas utilizam o usuário recuperado a partir do token para identificar o responsável pelas operações auditáveis.
+
+## CORS
+
+O backend está configurado para aceitar requisições do frontend via CORS:
+
+- Origens permitidas: `http://localhost:5173`, `http://127.0.0.1:5173`
+- Credenciais permitidas
+- Todos os métodos e headers permitidos
+
+Isso permite que o frontend, rodando em uma porta diferente, possa se comunicar com a API sem restrições de navegador.
 
 ---
 
@@ -779,6 +964,7 @@ docs: atualizar instruções de execução do projeto
 # 1. Criar os arquivos locais de configuração
 cp docker-compose.yml.example docker-compose.yml
 cp src/core/configs.py.example src/core/configs.py
+cp .env.example .env
 
 # 2. Ajustar as configurações e credenciais
 
@@ -794,6 +980,12 @@ docker compose exec backend uv run python -m seeders.database_seeder
 
 Depois acesse:
 
+**Frontend:**
+```text
+http://localhost:5173
+```
+
+**API (Swagger):**
 ```text
 http://localhost:8000/docs
 ```
@@ -851,11 +1043,22 @@ http://localhost:8000/docs
 
 ## Frontend
 
-- [ ] Vue.js com Options API
-- [ ] TypeScript
-- [ ] Pinia
-- [ ] Vuetify
-- [ ] Integração com a API
+- [x] Estrutura do projeto
+- [x] Configuração do Vite
+- [x] Configuração do Vuetify
+- [x] Configuração do Vue Router
+- [x] Configuração do Pinia
+- [x] Serviço de API
+- [x] Serviço de autenticação
+- [x] Store de autenticação
+- [x] Página de login
+- [x] Página inicial
+- [x] Proteção de rotas
+- [x] Integração com a API
+- [ ] Páginas de gestão de estoque
+- [ ] Páginas de gestão de produtos
+- [ ] Páginas de gestão de fornecedores
+- [ ] Páginas de gestão de usuários
 
 ---
 

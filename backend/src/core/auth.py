@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from pytz import timezone
-from typing import Optional, List
+from typing import Optional
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,18 +17,17 @@ oauth2_scheme = OAuth2PasswordBearer(
 )
 
 async def authenticate(email: EmailStr, password: str, db: AsyncSession) -> Optional[UsuarioModel]:
-    async with db as session:
-        query = select(UsuarioModel).filter(UsuarioModel.email == email)
-        result = await session.execute(query)
-        usuario: UsuarioModel = result.scalars().unique().one_or_none()
+    query = select(UsuarioModel).where(UsuarioModel.email == email)
+    result = await db.execute(query)
+    usuario: UsuarioModel = result.scalars().unique().one_or_none()
 
-        if not usuario:
-            return None
+    if not usuario:
+        return None
 
-        if not verify_password(password, usuario.password):
-            return None
+    if not verify_password(password, usuario.password):
+        return None
         
-        return usuario
+    return usuario
 
 def _create_token(tipo_token: str, tempo_vida: timedelta, sub: str) -> str:
     payload = {}

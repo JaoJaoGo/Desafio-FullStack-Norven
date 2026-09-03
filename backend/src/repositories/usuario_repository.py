@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import select, func, or_
+from sqlalchemy import String, cast, select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -33,7 +33,7 @@ class UsuarioRepository:
         return result.scalars().unique().one_or_none()
 
     @staticmethod
-    async def list(db: AsyncSession, search: Optional[str], page: int, per_page: int) -> tuple[list[UsuarioModel], int]:
+    async def list(db: AsyncSession, search: Optional[str], nivel_acesso: Optional[str], page: int, per_page: int) -> tuple[list[UsuarioModel], int]:
         filters = []
 
         if search:
@@ -44,6 +44,17 @@ class UsuarioRepository:
                     UsuarioModel.nome.ilike(search_value),
                     UsuarioModel.email.ilike(search_value)
                 )
+            )
+
+        if nivel_acesso:
+            filters.append(
+                func.lower(
+                    cast(
+                        UsuarioModel.nivel_acesso,
+                        String,
+                    )
+                )
+                == nivel_acesso.strip().lower()
             )
 
         count_query = select(func.count(UsuarioModel.id))

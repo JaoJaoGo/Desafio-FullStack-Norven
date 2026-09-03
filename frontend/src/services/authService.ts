@@ -1,5 +1,5 @@
 import { apiRequest } from '@/services/api'
-import type { LoginCredentials, TokenResponse } from '@/types/auth'
+import type { LoginCredentials, TokenResponse, AuthenticatedUser } from '@/types/auth'
 
 export const authService = {
     async login(credentials: LoginCredentials): Promise<TokenResponse> {
@@ -16,6 +16,15 @@ export const authService = {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body,
+            },
+        )
+    },
+
+    async me(): Promise<AuthenticatedUser> {
+        return apiRequest<AuthenticatedUser>(
+            '/auth/me',
+            {
+                method: 'GET',
             },
         )
     },

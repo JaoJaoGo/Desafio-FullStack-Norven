@@ -7,6 +7,8 @@ import { useAuthStore } from '@/stores/auth'
 
 import InicioView from '@/views/InicioView.vue'
 import LoginView from '@/views/LoginView.vue'
+import FuncionariosView from '@/views/funcionarios/FuncionariosView.vue'
+import FuncionarioFormView from '@/views/funcionarios/FuncionarioFormView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,6 +26,21 @@ const router = createRouter({
           name: 'inicio',
           component: InicioView,
         },
+        {
+          path: 'funcionarios',
+          name: 'funcionarios',
+          component: FuncionariosView,
+        },
+        {
+          path: 'funcionarios/novo',
+          name: 'funcionario-create',
+          component: FuncionarioFormView,
+        },
+        {
+          path: 'funcionarios/:id/editar',
+          name: 'funcionario-edit',
+          component: FuncionarioFormView,
+        },
       ],
     },
 
@@ -39,7 +56,7 @@ const router = createRouter({
           meta: {
             guestOnly: true,
           },
-        },
+        }
       ],
     },
 
@@ -50,7 +67,7 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const authStore = useAuthStore()
 
   const requiresAuth = to.matched.some((route) => route.meta.requiresAuth)
@@ -63,6 +80,16 @@ router.beforeEach((to) => {
       query: {
         redirect: to.fullPath,
       },
+    }
+  }
+
+  try {
+    await authStore.ensureCurrentUser()
+  } catch {
+    authStore.logout()
+
+    return {
+      name: 'login',
     }
   }
 

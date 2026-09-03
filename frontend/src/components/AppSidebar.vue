@@ -36,8 +36,8 @@ export default defineComponent({
                 {
                   title: "Funcionários",
                   icon: "mdi-account-group-outline",
-                  routeName: null,
-                  disabled: true,
+                  routeName: 'funcionarios',
+                  disabled: false,
                 },
                 {
                   title: "Fornecedores",

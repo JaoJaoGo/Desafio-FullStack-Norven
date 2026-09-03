@@ -61,8 +61,8 @@ class UsuarioService:
             raise
 
     @staticmethod
-    async def list(db: AsyncSession, search: Optional[str], page: int, per_page: int) -> tuple[list[UsuarioModel], int]:
-        return await UsuarioRepository.list(db, search, page, per_page)
+    async def list(db: AsyncSession, search: Optional[str], nivel_acesso: Optional[str], page: int, per_page: int) -> tuple[list[UsuarioModel], int]:
+        return await UsuarioRepository.list(db, search, nivel_acesso, page, per_page)
 
     @staticmethod
     async def find_by_id(db: AsyncSession, usuario_id: int) -> UsuarioModel:
@@ -74,7 +74,10 @@ class UsuarioService:
         return usuario
 
     @staticmethod
-    async def update(db: AsyncSession, usuario_id: int, data: UsuarioUpdateSchema) -> UsuarioModel:
+    async def update(db: AsyncSession, usuario_id: int, data: UsuarioUpdateSchema, current_user_id: int) -> UsuarioModel:  
+        if current_user_id == usuario_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Não é permitido editar o usuário da conta autenticada.")
+
         usuario = await UsuarioRepository.find_by_id(db=db, usuario_id=usuario_id, with_relations=True)
 
         if usuario is None:

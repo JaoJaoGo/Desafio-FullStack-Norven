@@ -29,8 +29,8 @@ export default defineComponent({
           description:
             'Gerencie funcionários, informações de contato e endereços.',
           icon: 'mdi-account-group-outline',
-          routeName: null,
-          disabled: true,
+          routeName: 'funcionarios',
+          disabled: false,
         },
         {
           title: 'Fornecedores',

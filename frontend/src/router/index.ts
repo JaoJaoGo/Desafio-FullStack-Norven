@@ -9,6 +9,8 @@ import InicioView from '@/views/InicioView.vue'
 import LoginView from '@/views/LoginView.vue'
 import FuncionariosView from '@/views/funcionarios/FuncionariosView.vue'
 import FuncionarioFormView from '@/views/funcionarios/FuncionarioFormView.vue'
+import FornecedoresView from '@/views/fornecedores/FornecedoresView.vue'
+import FornecedorFormView from '@/views/fornecedores/FornecedorFormView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +42,21 @@ const router = createRouter({
           path: 'funcionarios/:id/editar',
           name: 'funcionario-edit',
           component: FuncionarioFormView,
+        },
+        {
+          path: 'fornecedores',
+          name: 'fornecedores',
+          component: FornecedoresView,
+        },
+        {
+          path: 'fornecedores/novo',
+          name: 'fornecedor-create',
+          component: FornecedorFormView,
+        },
+        {
+          path: 'fornecedores/:id/editar',
+          name: 'fornecedor-edit',
+          component: FornecedorFormView,
         },
       ],
     },

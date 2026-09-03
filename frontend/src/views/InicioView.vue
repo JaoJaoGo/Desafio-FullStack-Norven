@@ -37,8 +37,8 @@ export default defineComponent({
           description:
             'Consulte e gerencie fornecedores, contatos e endereços.',
           icon: 'mdi-truck-outline',
-          routeName: null,
-          disabled: true,
+          routeName: 'fornecedores',
+          disabled: false,
         },
         {
           title: 'Produtos',

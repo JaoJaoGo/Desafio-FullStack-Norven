@@ -42,8 +42,8 @@ export default defineComponent({
                 {
                   title: "Fornecedores",
                   icon: "mdi-truck-outline",
-                  routeName: null,
-                  disabled: true,
+                  routeName: 'fornecedores',
+                  disabled: false,
                 },
                 {
                   title: "Produtos",

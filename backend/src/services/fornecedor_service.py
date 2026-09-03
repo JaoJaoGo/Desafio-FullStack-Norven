@@ -56,6 +56,7 @@ class FornecedorService:
     @staticmethod
     async def update(db: AsyncSession, fornecedor_id: int, data: FornecedorUpdateSchema):
         fornecedor = await FornecedorRepository.find_by_id(db, fornecedor_id, with_relations=True)
+
         if fornecedor is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Fornecedor não encontrado.")
 
@@ -71,28 +72,20 @@ class FornecedorService:
                 if existente:
                     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Já existe fornecedor com este CNPJ")
 
-                values['cnpj'] = data.cnpj
+                values["cnpj"] = data.cnpj
 
             if data.endereco is not None:
                 endereco_values = {
-                    "logradouro":
-                        fornecedor.endereco.logradouro,
-                    "numero":
-                        fornecedor.endereco.numero,
-                    "complemento":
-                        fornecedor.endereco.complemento,
-                    "cep":
-                        fornecedor.endereco.cep,
-                    "bairro":
-                        fornecedor.endereco.bairro,
-                    "municipio_id":
-                        fornecedor.endereco.municipio_id,
+                    "logradouro": fornecedor.endereco.logradouro,
+                    "numero": fornecedor.endereco.numero,
+                    "complemento": fornecedor.endereco.complemento,
+                    "cep": fornecedor.endereco.cep,
+                    "bairro": fornecedor.endereco.bairro,
+                    "municipio_id": fornecedor.endereco.municipio_id,
                 }
 
-                endereco_values.update(data.endereco.model_dump(exclude_none=True))
-
+                endereco_values.update(data.endereco.model_dump(exclude_unset=True))
                 endereco_data = EnderecoCreateSchema(**endereco_values)
-
                 endereco = await EnderecoRepository.find_by_data(db, endereco_data)
 
                 if endereco is None:
@@ -103,22 +96,13 @@ class FornecedorService:
 
             if data.contato is not None:
                 contato_values = {
-                    "cod_pais":
-                        fornecedor.contato.cod_pais,
-                    "ddd":
-                        fornecedor.contato.ddd,
-                    "numero":
-                        fornecedor.contato.numero,
+                    "cod_pais": fornecedor.contato.cod_pais,
+                    "ddd": fornecedor.contato.ddd,
+                    "numero": fornecedor.contato.numero,
                 }
 
-                contato_values.update(
-                    data.contato.model_dump(
-                        exclude_unset=True
-                    )
-                )
-
+                contato_values.update(data.contato.model_dump(exclude_unset=True))
                 contato_data = ContatoCreateSchema(**contato_values)
-
                 contato = await ContatoRepository.find_by_data(db, contato_data)
 
                 if contato is None:
@@ -129,13 +113,18 @@ class FornecedorService:
 
             if values:
                 await FornecedorRepository.update(db, fornecedor, values)
-            
+
             await db.commit()
 
-            return await FornecedorRepository.find_by_id(db, fornecedor.id)
+            return await FornecedorService.find_by_id(db, fornecedor.id)
+
         except HTTPException:
             await db.rollback()
             raise
         except IntegrityError:
             await db.rollback()
+
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Não foi possível atualizar o fornecedor.")
+        except Exception:
+            await db.rollback()
+            raise

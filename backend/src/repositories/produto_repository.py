@@ -169,7 +169,7 @@ class ProdutoRepository:
         produto_status = ProdutoRepository._status_expr(
             estoque_total, validade)
         estoque_baixo = and_(
-            estoque_total < 0,
+            estoque_total > 0,
             estoque_total <= settings.ESTOQUE_BAIXO_LIMITE
         )
 

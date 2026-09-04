@@ -45,8 +45,8 @@ export default defineComponent({
           description:
             'Controle produtos, lotes, estoque e movimentações.',
           icon: 'mdi-package-variant',
-          routeName: null,
-          disabled: true,
+          routeName: 'produtos',
+          disabled: false,
         },
       ],
 

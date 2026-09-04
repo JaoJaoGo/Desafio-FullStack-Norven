@@ -48,8 +48,8 @@ export default defineComponent({
                 {
                   title: "Produtos",
                   icon: "mdi-package-variant",
-                  routeName: null,
-                  disabled: true,
+                  routeName: 'produtos',
+                  disabled: false,
                 },
             ],
         }

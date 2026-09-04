@@ -11,6 +11,8 @@ import FuncionariosView from '@/views/funcionarios/FuncionariosView.vue'
 import FuncionarioFormView from '@/views/funcionarios/FuncionarioFormView.vue'
 import FornecedoresView from '@/views/fornecedores/FornecedoresView.vue'
 import FornecedorFormView from '@/views/fornecedores/FornecedorFormView.vue'
+import ProdutosView from '@/views/produtos/ProdutosView.vue'
+import ProdutoFormView from '@/views/produtos/ProdutoFormView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -57,6 +59,21 @@ const router = createRouter({
           path: 'fornecedores/:id/editar',
           name: 'fornecedor-edit',
           component: FornecedorFormView,
+        },
+        {
+          path: 'produtos',
+          name: 'produtos',
+          component: ProdutosView,
+        },
+        {
+          path: 'produtos/novo',
+          name: 'produto-create',
+          component: ProdutoFormView,
+        },
+        {
+          path: 'produtos/:id/editar',
+          name: 'produto-edit',
+          component: ProdutoFormView,
         },
       ],
     },

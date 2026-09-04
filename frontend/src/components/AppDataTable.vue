@@ -3,235 +3,240 @@ import { defineComponent, type PropType } from 'vue'
 import type { DataTableAction, DataTableHeader } from '@/types/dataTable'
 
 export default defineComponent({
-    name: "AppDataTable",
+  name: "AppDataTable",
 
-    props: {
-        headers: {
-            type: Array as PropType<DataTableHeader[]>,
-            required: true,
-        },
-
-        items: {
-            type: Array as PropType<Record<string, unknown>[]>,
-            required: true,
-        },
-
-        actions: {
-            type: Array as PropType<DataTableAction[]>,
-            default: () => [],
-        },
-
-        loading: {
-            type: Boolean,
-            default: false,
-        },
-
-        page: {
-            type: Number,
-            required: true,
-        },
-
-        perPage: {
-            type: Number,
-            required: true,
-        },
-
-        totalItems: {
-            type: Number,
-            required: true,
-        },
-
-        itemKey: {
-            type: String,
-            default: 'id',
-        },
-
-        emptyText: {
-            type: String,
-            default: 'Nenhum registro encontrado.',
-        },
-
-        perPageOptions: {
-            type: Array as PropType<number[]>,
-            default: () => [
-                10,
-                20,
-                50,
-                100,
-            ],
-        },
+  props: {
+    headers: {
+      type: Array as PropType<DataTableHeader[]>,
+      required: true,
     },
 
-    emits: [
-        'update:page',
-        'update:perPage',
+    items: {
+      type: Array as PropType<Record<string, unknown>[]>,
+      required: true,
+    },
+
+    actions: {
+      type: Array as PropType<DataTableAction[]>,
+      default: () => [],
+    },
+
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+
+    page: {
+      type: Number,
+      required: true,
+    },
+
+    perPage: {
+      type: Number,
+      required: true,
+    },
+
+    totalItems: {
+      type: Number,
+      required: true,
+    },
+
+    itemKey: {
+      type: String,
+      default: 'id',
+    },
+
+    emptyText: {
+      type: String,
+      default: 'Nenhum registro encontrado.',
+    },
+
+    perPageOptions: {
+      type: Array as PropType<number[]>,
+      default: () => [
+        10,
+        20,
+        50,
+        100,
+      ],
+    },
+  },
+
+  emits: [
+    'update:page',
+    'update:perPage',
+    'action',
+  ],
+
+  data() {
+    return {
+      contextMenu: {
+        visible: false,
+        x: 0,
+        y: 0,
+        item: null as Record<string, unknown> | null,
+      },
+    }
+  },
+
+  computed: {
+    totalPages(): number {
+      if (this.totalItems === 0) {
+        return 0
+      }
+
+      return Math.ceil(this.totalItems / this.perPage)
+    },
+
+    startItem(): number {
+      if (this.totalItems === 0) {
+        return 0
+      }
+
+      return (this.page - 1) * this.perPage + 1
+    },
+
+    endItem(): number {
+      if (this.totalItems === 0) {
+        return 0
+      }
+
+      return Math.min(this.page * this.perPage, this.totalItems)
+    },
+
+    columnCount(): number {
+      return this.headers.length + (this.actions.length > 0 ? 1 : 0)
+    },
+
+    contextMenuStyle(): Record<string, string> {
+      return {
+        left: `${this.contextMenu.x}px`,
+        top: `${this.contextMenu.y}px`,
+      }
+    },
+  },
+
+  mounted() {
+    document.addEventListener('click', this.closeContextMenu)
+    window.addEventListener('resize', this.closeContextMenu)
+    window.addEventListener('scroll', this.closeContextMenu, true)
+  },
+
+  beforeUnmount() {
+    document.removeEventListener('click', this.closeContextMenu)
+    window.removeEventListener('resize', this.closeContextMenu)
+    window.removeEventListener('scroll', this.closeContextMenu, true)
+  },
+
+  methods: {
+    getValue(item: Record<string, unknown>, key: string): unknown {
+      return item[key]
+    },
+
+    getItemKey(item: Record<string, unknown>, index: number): string | number {
+      const value = item[this.itemKey]
+
+      if (typeof value === 'string' || typeof value === 'number') {
+        return value
+      }
+
+      return index
+    },
+
+    getAlignClass(
+      align:
+        | 'start'
+        | 'center'
+        | 'end' = 'start'
+    ): string {
+      return `text-${align}`
+    },
+
+    openContextMenu(event: MouseEvent, item: Record<string, unknown>): void {
+      if (this.actions.length === 0) {
+        this.closeContextMenu()
+        return
+      }
+
+      const menuWidth = 220
+      const menuHeight = this.actions.length * 48 + 16
+
+      const maxX = window.innerWidth - menuWidth - 8
+      const maxY = window.innerHeight - menuHeight - 8
+
+      this.contextMenu = {
+        visible: true,
+
+        x: Math.max(8, Math.min(event.clientX, maxX)),
+        y: Math.max(8, Math.min(event.clientY, maxY)),
+
+        item,
+      }
+    },
+
+    closeContextMenu(): void {
+      this.contextMenu.visible = false
+
+      this.contextMenu.item = null
+    },
+
+    emitAction(action: DataTableAction, item: Record<string, unknown>): void {
+      if (this.isActionDisabled(action, item)) {
+        return
+      }
+
+      this.$emit(
         'action',
-    ],
+        {
+          action: action.key,
+          item,
+        },
+      )
 
-    data () {
-        return {
-            contextMenu: {
-                visible: false,
-                x: 0,
-                y: 0,
-                item: null as Record<string, unknown> | null,
-            },
-        }
+      this.closeContextMenu()
     },
 
-    computed: {
-        totalPages(): number {
-            if (this.totalItems === 0) {
-                return 0
-            }
+    emitContextAction(action: DataTableAction): void {
+      if (!this.contextMenu.item) {
+        return
+      }
 
-            return Math.ceil(this.totalItems / this.perPage)
-        },
-
-        startItem(): number {
-            if (this.totalItems === 0) {
-                return 0
-            }
-
-            return (this.page - 1) * this.perPage + 1
-        },
-
-        endItem(): number {
-            if (this.totalItems === 0) {
-                return 0
-            }
-
-            return Math.min(this.page * this.perPage, this.totalItems)
-        },
-
-        columnCount(): number {
-            return this.headers.length + (this.actions.length > 0 ? 1 : 0)
-        },
-
-        contextMenuStyle(): Record<string, string> {
-            return {
-                left: `${this.contextMenu.x}px`,
-                top: `${this.contextMenu.y}px`,
-            }
-        },
+      this.emitAction(action, this.contextMenu.item)
     },
 
-    mounted() {
-        document.addEventListener('click', this.closeContextMenu)
-        window.addEventListener('resize', this.closeContextMenu)
-        window.addEventListener('scroll', this.closeContextMenu, true)
+    updatePage(value: number): void {
+      this.$emit('update:page', value)
     },
 
-    beforeUnmount() {
-        document.removeEventListener('click', this.closeContextMenu)
-        window.removeEventListener('resize', this.closeContextMenu)
-        window.removeEventListener('scroll', this.closeContextMenu, true)
+    updatePerPage(value: number | null): void {
+      if (!value) {
+        return
+      }
+
+      this.$emit('update:perPage', Number(value))
     },
 
-    methods: {
-        getValue(item: Record<string, unknown>, key: string): unknown {
-            return item[key]
-        },
+    isActionDisabled(
+      action: DataTableAction,
+      item: Record<
+        string,
+        unknown
+      >,
+    ): boolean {
+      if (
+        typeof action.disabled
+        === 'function'
+      ) {
+        return action.disabled(
+          item,
+        )
+      }
 
-        getItemKey(item: Record<string, unknown>, index: number): string | number {
-            const value = item[this.itemKey]
-
-            if (typeof value === 'string' || typeof value === 'number') {
-                return value
-            }
-
-            return index
-        },
-
-        getAlignClass(
-            align:
-                | 'start'
-                | 'center'
-                | 'end' = 'start'
-        ): string {
-            return `text-${align}`
-        },
-
-        openContextMenu(event: MouseEvent, item: Record<string, unknown>): void {
-            const menuWidth = 220
-            const menuHeight = this.actions.length * 48 + 16
-
-            const maxX = window.innerWidth - menuWidth - 8
-            const maxY = window.innerHeight - menuHeight - 8
-
-            this.contextMenu = {
-                visible: true,
-
-                x: Math.max(8, Math.min(event.clientX, maxX)),
-                y: Math.max(8, Math.min(event.clientY, maxY)),
-                
-                item,
-            }
-        },
-
-        closeContextMenu(): void {
-            this.contextMenu.visible = false
-
-            this.contextMenu.item = null
-        },
-
-        emitAction(action: DataTableAction, item: Record<string, unknown>): void {
-            if (this.isActionDisabled(action, item)) {
-                return
-            }
-
-            this.$emit(
-                'action',
-                {
-                    action: action.key,
-                    item,
-                },
-            )
-
-            this.closeContextMenu()
-        },
-
-        emitContextAction(action: DataTableAction): void {
-            if (!this.contextMenu.item) {
-                return
-            }
-
-            this.emitAction(action, this.contextMenu.item)
-        },
-
-        updatePage(value: number): void {
-            this.$emit('update:page', value)
-        },
-
-        updatePerPage(value: number | null): void {
-            if (!value) {
-                return
-            }
-
-            this.$emit('update:perPage', Number(value))
-        },
-
-        isActionDisabled(
-          action: DataTableAction,
-          item: Record<
-            string,
-            unknown
-          >,
-        ): boolean {
-          if (
-            typeof action.disabled
-            === 'function'
-          ) {
-            return action.disabled(
-              item,
-            )
-          }
-
-          return Boolean(
-            action.disabled,
-          )
-        },
+      return Boolean(
+        action.disabled,
+      )
     },
+  },
 })
 </script>
 
@@ -253,7 +258,7 @@ export default defineComponent({
             v-for="header in headers"
             :key="header.key"
             :class="getAlignClass(header.align)"
-            :style="{width: header.width}"
+            :style="{ width: header.width }"
           >
             {{ header.title }}
           </th>
@@ -408,20 +413,16 @@ export default defineComponent({
 
 .data-row:hover {
   background:
-    rgba(
-      var(--v-theme-on-surface),
-      0.035
-    );
+    rgba(var(--v-theme-on-surface),
+      0.035);
 }
 
 .empty-state {
   padding: 48px 24px !important;
   text-align: center;
   color:
-    rgba(
-      var(--v-theme-on-surface),
-      0.6
-    );
+    rgba(var(--v-theme-on-surface),
+      0.6);
 }
 
 .data-table-footer {

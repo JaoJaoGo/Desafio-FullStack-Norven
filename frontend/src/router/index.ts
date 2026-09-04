@@ -13,6 +13,7 @@ import FornecedoresView from '@/views/fornecedores/FornecedoresView.vue'
 import FornecedorFormView from '@/views/fornecedores/FornecedorFormView.vue'
 import ProdutosView from '@/views/produtos/ProdutosView.vue'
 import ProdutoFormView from '@/views/produtos/ProdutoFormView.vue'
+import ProdutoDetailView from '@/views/produtos/ProdutoDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -69,6 +70,11 @@ const router = createRouter({
           path: 'produtos/novo',
           name: 'produto-create',
           component: ProdutoFormView,
+        },
+        {
+          path: 'produtos/:id',
+          name: 'produto-detail',
+          component: ProdutoDetailView,
         },
         {
           path: 'produtos/:id/editar',

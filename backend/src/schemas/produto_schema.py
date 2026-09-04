@@ -37,11 +37,13 @@ class ProdutoListItemSchema(SCBaseModel):
     unidade_medida_sigla: str
 
     validade: Optional[date]
+    quantidade_lotes: int
 
     estoque_total: Decimal
     estoque_baixo: bool
 
     status: ProdutoStatusEnum
+    statuses: List[ProdutoStatusEnum]
 
 class ProdutoFilterSchema(SCBaseModel):
     nome: Optional[str] = None
@@ -109,5 +111,7 @@ class ProdutoDetailResponseSchema(SCBaseModel):
     estoque_total: Decimal
     estoque_baixo: bool
     status: ProdutoStatusEnum
+    statuses: List[ProdutoStatusEnum]
     lotes: List[LoteResponseSchema]
     estoques: List[EstoqueResponseSchema]
+    quantidade_lotes: int

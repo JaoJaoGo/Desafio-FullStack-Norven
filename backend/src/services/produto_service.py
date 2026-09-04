@@ -3,6 +3,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.enums import ProdutoStatusEnum
 from models.informacao_nutricional_model import InformacaoNutricionalModel
 from models.usuario_model import UsuarioModel
 from services.estoque_service import EstoqueService
@@ -51,6 +52,20 @@ class ProdutoService:
             return informacao
         
         return await InformacaoNutricionalRepository.create(db, data)
+
+    @staticmethod
+    def _build_statuses(row):
+        statuses = []
+
+        if row.vencido: statuses.append(ProdutoStatusEnum.VENCIDO)
+        if row.proximo_vencimento: statuses.append(ProdutoStatusEnum.PROXIMO_VENCIMENTO)
+        if row.estoque_baixo: statuses.append(ProdutoStatusEnum.ESTOQUE_BAIXO)
+        if row.sem_estoque: statuses.append(ProdutoStatusEnum.SEM_ESTOQUE)
+
+        if not statuses:
+            statuses.append(ProdutoStatusEnum.OK)
+
+        return statuses
 
     # CREATE
     @staticmethod
@@ -134,15 +149,27 @@ class ProdutoService:
                     nome=produto.nome,
                     preco_venda_atual=produto.preco_venda_atual,
                     eh_perecivel=produto.eh_perecivel,
+
                     categoria_id=produto.categoria_id,
                     categoria=row.categoria_nome,
+
                     unidade_medida_id=produto.unidade_medida_id,
                     unidade_medida=row.unidade_nome,
                     unidade_medida_sigla=row.unidade_sigla,
-                    validade=row.validade,
+                    
+                    validade=(
+                        row.validade if row.quantidade_lotes == 1 else None
+                    ),
+
+                    quantidade_lotes=row.quantidade_lotes,
+
                     estoque_total=row.estoque_total,
                     estoque_baixo=row.estoque_baixo,
-                    status=row.status
+
+                    status=row.status,
+                    statuses=(
+                        ProdutoService._build_statuses(row)
+                    ),
                 )
             )
         
@@ -182,7 +209,11 @@ class ProdutoService:
             estoque_baixo=indicators.estoque_baixo,
             status=indicators.status,
             lotes=lotes,
-            estoques=estoques
+            estoques=estoques,
+            quantidade_lotes=indicators.quantidade_lotes,
+            statuses=(
+                ProdutoService._build_statuses(indicators)
+            ),
         )
 
     # UPDATE

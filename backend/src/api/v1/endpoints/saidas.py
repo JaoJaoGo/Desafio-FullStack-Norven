@@ -8,7 +8,7 @@ from controllers.saida_controller import SaidaController
 from core.deps import get_current_user, get_session
 from core.enums import TipoSaidaEnum
 from models.usuario_model import UsuarioModel
-from schemas.saida_schema import SaidaCreateSchema, SaidaFilterSchema, SaidaListResponseSchema, SaidaResponseSchema, SaidaUpdateSchema
+from schemas.saida_schema import SaidaCreateSchema, SaidaFilterSchema, SaidaListResponseSchema, SaidaResponseSchema
 
 router = APIRouter()
 
@@ -55,7 +55,3 @@ async def list_saidas(
 @router.get("/{saida_id}", response_model=SaidaResponseSchema, dependencies=[Depends(get_current_user)])
 async def get_saida(saida_id: int, db: AsyncSession = Depends(get_session)):
     return await SaidaController.find_by_id(db, saida_id)
-
-@router.patch("/{saida_id}", response_model=SaidaResponseSchema, dependencies=[Depends(get_current_user)])
-async def update_saida(saida_id: int, data: SaidaUpdateSchema, db: AsyncSession = Depends(get_session)):
-    return await SaidaController.update(db, saida_id, data)

@@ -1,5 +1,7 @@
 import type { Categoria } from '@/types/categoria'
 import type { UnidadeMedida } from '@/types/unidadeMedida'
+import type { Estoque } from '@/types/estoque'
+import type { Lote } from '@/types/lote'
 
 export type ProdutoStatus =
     | 'SEM_ESTOQUE'
@@ -27,11 +29,13 @@ export type ProdutoListItem = Record<string, unknown> & {
     unidade_medida_sigla: string
 
     validade: string | null
+    quantidade_lotes: number
 
     estoque_total: DecimalValue
     estoque_baixo: boolean
 
     status: ProdutoStatus
+    statuses: ProdutoStatus[]
 }
 
 export interface ProdutoListResponse {
@@ -100,9 +104,14 @@ export interface ProdutoDetail {
     informacao_nutricional: InformacaoNutricionalResponse | null
 
     validade: string | null
+    quantidade_lotes: number
     estoque_total: DecimalValue
     estoque_baixo: boolean
     status: ProdutoStatus
+    statuses: ProdutoStatus[]
+
+    lotes: Lote[]
+    estoques: Estoque[]
 }
 
 export interface ProdutoCreatePayload {

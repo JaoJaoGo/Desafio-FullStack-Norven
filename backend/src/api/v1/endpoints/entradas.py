@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from controllers.entrada_controller import EntradaController
 from core.deps import get_current_user, get_session
 from models.usuario_model import UsuarioModel
-from schemas.entrada_schema import EntradaCreateSchema, EntradaFilterSchema, EntradaListResponseSchema, EntradaResponseSchema, EntradaUpdateSchema
+from schemas.entrada_schema import EntradaCreateSchema, EntradaFilterSchema, EntradaListResponseSchema, EntradaResponseSchema
 
 
 router = APIRouter()
@@ -57,7 +57,3 @@ async def list_entradas(
 @router.get('/{entrada_id}', response_model=EntradaResponseSchema, dependencies=[Depends(get_current_user)])
 async def get_entrada(entrada_id: int, db: AsyncSession = Depends(get_session)):
     return await EntradaController.find_by_id(db, entrada_id)
-
-@router.patch('/{entrada_id}', response_model=EntradaResponseSchema, dependencies=[Depends(get_current_user)])
-async def update_entrada(entrada_id: int, data: EntradaUpdateSchema, db: AsyncSession = Depends(get_session)):
-    return await EntradaController.update(db, entrada_id, data)

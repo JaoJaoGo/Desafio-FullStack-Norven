@@ -3,12 +3,20 @@ import { apiRequest } from '@/services/api'
 import type { Lote, LoteCreatePayload, LoteListResponse } from '@/types/lote'
 
 export const loteService = {
-    async listByProduct(produtoId: number, page: number, perPage: number): Promise<LoteListResponse> {
+    async listByProduct(produtoId: number, page: number, perPage: number, disponivelParaEntrada = false, somenteComEstoque = false): Promise<LoteListResponse> {
         const query = new URLSearchParams({
             produto_id: String(produtoId),
             page: String(page),
             per_page: String(perPage),
         })
+
+        if (disponivelParaEntrada) {
+            query.set('disponivel_para_entrada', 'true')
+        }
+
+        if (somenteComEstoque) {
+            query.set('somente_com_estoque', 'true')
+        }
 
         return apiRequest<LoteListResponse>(
             `/lotes/?${query.toString()}`,
@@ -18,13 +26,13 @@ export const loteService = {
         )
     },
 
-    async listAllByProduct(produtoId: number): Promise<Lote[]> {
+    async listAllByProduct(produtoId: number, disponivelParaEntrada = false, somenteComEstoque = false): Promise<Lote[]> {
         const items: Lote[] = []
 
         let page = 1
 
         while (true) {
-            const response = await this.listByProduct(produtoId, page, 100)
+            const response = await this.listByProduct(produtoId, page, 100, disponivelParaEntrada, somenteComEstoque)
 
             items.push(...response.items)
 

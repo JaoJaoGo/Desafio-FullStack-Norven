@@ -21,6 +21,8 @@ async def list_lotes(
     produto_id: Optional[int] = None,
     validade_inicio: Optional[date] = None,
     validade_fim: Optional[date] = None,
+    disponivel_para_entrada: bool = False,
+    somente_com_estoque: bool = False,
     page: int = Query(default=1, ge=1),
     per_page: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_session)
@@ -30,6 +32,8 @@ async def list_lotes(
         produto_id=produto_id,
         validade_inicio=validade_inicio,
         validade_fim=validade_fim,
+        disponivel_para_entrada=disponivel_para_entrada,
+        somente_com_estoque=somente_com_estoque,
         page=page,
         per_page=per_page
     )

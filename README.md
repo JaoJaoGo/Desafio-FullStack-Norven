@@ -213,9 +213,23 @@ docker --version
 docker compose version
 ```
 
-Python e `uv` são utilizados dentro do container do backend e não são obrigatórios na máquina host para a execução normal da aplicação.
+A execução normal da aplicação é feita pelos containers. Portanto, **Python, `uv`, Node.js e npm não são obrigatórios no host apenas para subir o sistema com Docker**, desde que as imagens sejam construídas corretamente.
 
-Para executar comandos Python diretamente no host durante o desenvolvimento, também será necessário possuir Python e `uv`.
+Entretanto, para desenvolvimento local e para que o editor/IDE reconheça as dependências do projeto, é recomendado instalar também:
+
+- Python compatível com a versão definida no `pyproject.toml`;
+- `uv`;
+- Node.js;
+- npm.
+
+Isso é especialmente útil no VS Code/Pylance. Caso o editor mostre erros como:
+
+```text
+Import "sqlalchemy" could not be resolved
+Import "fastapi" could not be resolved
+```
+
+mesmo com o backend funcionando no Docker, normalmente significa que o **ambiente Python local do editor ainda não possui as dependências instaladas**. As dependências do container e as dependências reconhecidas pelo editor no host são ambientes diferentes.
 
 ---
 
@@ -275,17 +289,21 @@ print(secrets.token_urlsafe(32))
 
 ### 2.3 Configurações do frontend
 
-Crie o arquivo de configuração:
+Entre na pasta `frontend` e crie o arquivo de configuração:
 
 ```bash
+cd frontend
 cp .env.example .env
 ```
 
 No PowerShell:
 
 ```powershell
+Set-Location frontend
 Copy-Item .env.example .env
 ```
+
+Se você já estiver dentro de `frontend`, execute apenas o comando de cópia.
 
 Configure a URL da API:
 
@@ -297,7 +315,126 @@ VITE_API_BASE_URL=http://localhost:8000/api/v1
 
 ---
 
-## 3. Comunicação entre os containers
+## 3. Instalar / sincronizar dependências para desenvolvimento
+
+> Esta etapa é necessária quando você deseja executar ferramentas no host ou fazer o editor reconhecer corretamente as dependências. Para apenas executar a aplicação pelos containers, o `docker compose up -d --build` já deve instalar as dependências dentro das imagens.
+
+### 3.1 Backend
+
+Entre na pasta `backend`:
+
+```bash
+cd backend
+```
+
+Sincronize as dependências Python definidas no `pyproject.toml` e no `uv.lock`:
+
+```bash
+uv sync
+```
+
+No Windows/PowerShell, o comando é o mesmo:
+
+```powershell
+uv sync
+```
+
+O `uv` criará/sincronizará o ambiente virtual local, normalmente em:
+
+```text
+backend/.venv
+```
+
+Se estiver utilizando VS Code com Pylance e os imports continuarem aparecendo como não encontrados, selecione o interpretador Python desse ambiente virtual.
+
+No Windows, normalmente:
+
+```text
+backend\.venv\Scripts\python.exe
+```
+
+No Linux/macOS:
+
+```text
+backend/.venv/bin/python
+```
+
+> **Importante:** este `uv sync` no host é principalmente para desenvolvimento local, autocomplete, análise estática, lint e execução de comandos fora do Docker. O backend que roda pela aplicação utiliza as dependências instaladas dentro do container.
+
+Também é possível executar comandos Python diretamente dentro do container sem instalar as dependências Python no host:
+
+```bash
+docker compose exec backend uv run python --version
+```
+
+Por exemplo:
+
+```bash
+docker compose exec backend uv run alembic upgrade head
+docker compose exec backend uv run python -m seeders.database_seeder
+docker compose exec backend uv run pytest
+```
+
+### 3.2 Frontend
+
+Entre na pasta `frontend`:
+
+```bash
+cd frontend
+```
+
+Instale as dependências:
+
+```bash
+npm install
+```
+
+Isso cria/sincroniza a pasta:
+
+```text
+frontend/node_modules
+```
+
+Além de permitir a execução local dos comandos do frontend, isso ajuda o editor a resolver corretamente dependências do Vue, Vuetify, Pinia, TypeScript, ESLint e demais pacotes.
+
+Exemplos:
+
+```bash
+npm run type-check
+npm run lint
+npm run build
+```
+
+Se o frontend estiver sendo executado somente pelo Docker, o container também instala/utiliza suas próprias dependências. O `npm install` no host é recomendado para desenvolvimento e ferramentas do editor.
+
+### 3.3 Resumo: host x Docker
+
+```text
+Host
+├── backend/.venv
+│   └── criado/sincronizado por: uv sync
+│       └── usado pelo editor e comandos Python locais
+│
+└── frontend/node_modules
+    └── criado/sincronizado por: npm install
+        └── usado pelo editor e comandos npm locais
+
+Docker
+├── container backend
+│   └── possui seu próprio ambiente Python e dependências
+│
+├── container frontend
+│   └── possui suas próprias dependências Node
+│
+└── container postgres
+    └── banco PostgreSQL
+```
+
+Portanto, um erro de importação mostrado pelo editor no host **não significa necessariamente que a dependência está ausente dentro do container**.
+
+---
+
+## 4. Comunicação entre os containers
 
 O PostgreSQL e o backend executam em containers diferentes e se comunicam pela rede criada pelo Docker Compose.
 
@@ -320,9 +457,16 @@ Dentro do container do backend, `localhost` apontaria para o próprio container 
 
 ---
 
-## 4. Criar e iniciar os containers
+## 5. Criar e iniciar os containers
 
-Na raiz do projeto:
+Execute os comandos do Docker Compose na pasta onde está o arquivo `docker-compose.yml` — neste projeto, a pasta `backend`:
+
+```bash
+cd backend
+docker compose up -d --build
+```
+
+Se você já estiver dentro de `backend`, basta executar:
 
 ```bash
 docker compose up -d --build
@@ -380,7 +524,7 @@ docker compose down -v
 
 ---
 
-## 5. Executar migrations
+## 6. Executar migrations
 
 Esta etapa é obrigatória na primeira execução:
 
@@ -428,7 +572,7 @@ docker compose exec backend uv run alembic history
 
 ---
 
-## 6. Executar seeders
+## 7. Executar seeders
 
 Após as migrations:
 
@@ -466,7 +610,7 @@ O processo de seed:
 
 ---
 
-## 7. Acessar a aplicação
+## 8. Acessar a aplicação
 
 Com os containers ativos e o banco preparado:
 
@@ -586,6 +730,21 @@ O Vue Router utiliza guards para proteger rotas:
 ## Desenvolvimento
 
 O frontend utiliza volume do Docker para refletir alterações locais no container durante o desenvolvimento.
+
+Ao clonar o projeto em uma nova máquina, recomenda-se instalar também as dependências no host:
+
+```bash
+cd frontend
+npm install
+```
+
+Isso disponibiliza `node_modules` para o editor e para comandos como:
+
+```bash
+npm run type-check
+npm run lint
+npm run build
+```
 
 Com o Vite em modo `--reload`, mudanças em arquivos podem ser detectadas sem reconstruir a imagem.
 
@@ -832,6 +991,21 @@ Também é possível executar qualquer outro arquivo individual presente em `tes
 
 O backend utiliza volume do Docker para refletir alterações locais no container durante o desenvolvimento.
 
+Ao clonar o projeto em uma nova máquina e utilizar Python/editor no host, sincronize primeiro as dependências:
+
+```bash
+cd backend
+uv sync
+```
+
+Depois, configure o editor para utilizar o interpretador presente em `backend/.venv`.
+
+Se preferir trabalhar exclusivamente pelo Docker, não é necessário executar o FastAPI manualmente no host. Com os containers ativos, comandos Python podem ser executados por:
+
+```bash
+docker compose exec backend uv run <comando>
+```
+
 Com o Uvicorn em modo `--reload`, mudanças em arquivos Python podem ser detectadas sem reconstruir a imagem.
 
 Uma nova build pode ser necessária quando houver mudanças em:
@@ -960,15 +1134,19 @@ docs: atualizar instruções de execução do projeto
 
 # Resumo para primeira execução
 
+## Opção recomendada: aplicação executada com Docker
+
+Partindo da raiz do repositório:
+
 ```bash
-# 1. Criar os arquivos locais de configuração
+# 1. Backend
+cd backend
+
+# 2. Criar os arquivos locais de configuração
 cp docker-compose.yml.example docker-compose.yml
 cp src/core/configs.py.example src/core/configs.py
-cp .env.example .env
 
-# 2. Ajustar as configurações e credenciais
-
-# 3. Subir os containers
+# 3. Subir backend, frontend e PostgreSQL
 docker compose up -d --build
 
 # 4. Executar migrations
@@ -978,17 +1156,64 @@ docker compose exec backend uv run alembic upgrade head
 docker compose exec backend uv run python -m seeders.database_seeder
 ```
 
+Em outro terminal, configure o frontend:
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+```
+
+O `npm install` no host é recomendado para o editor e ferramentas locais. O frontend continuará sendo executado pelo container caso o serviço `frontend` esteja ativo no Docker Compose.
+
+Para que o editor também reconheça imports Python como `fastapi` e `sqlalchemy`, execute opcionalmente no host:
+
+```bash
+cd backend
+uv sync
+```
+
+e selecione o interpretador da `.venv` criada pelo `uv`.
+
+### PowerShell
+
+```powershell
+# Backend
+Set-Location backend
+
+Copy-Item docker-compose.yml.example docker-compose.yml
+Copy-Item src/core/configs.py.example src/core/configs.py
+
+docker compose up -d --build
+
+docker compose exec backend uv run alembic upgrade head
+docker compose exec backend uv run python -m seeders.database_seeder
+
+# Opcional: dependências Python também no host/editor
+uv sync
+
+# Frontend
+Set-Location ..\frontend
+
+Copy-Item .env.example .env
+npm install
+```
+
 Depois acesse:
 
 **Frontend:**
+
 ```text
 http://localhost:5173
 ```
 
 **API (Swagger):**
+
 ```text
 http://localhost:8000/docs
 ```
+
+> Se o sistema estiver rodando via Docker, **não é necessário executar `uvicorn` ou `npm run dev` manualmente no host**.
 
 ---
 

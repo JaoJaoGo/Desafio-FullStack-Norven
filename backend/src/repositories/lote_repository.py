@@ -10,7 +10,7 @@ from schemas.lote_schema import LoteCreateSchema
 
 class LoteRepository:
     @staticmethod
-    async def list(db: AsyncSession, search, produto_id, validade_inicio, validade_fim, page, per_page):
+    async def list(db: AsyncSession, search, produto_id, validade_inicio, validade_fim, disponivel_para_entrada, somente_com_estoque, page, per_page):
         estoque_total = (
             select(func.coalesce(func.sum(EstoqueModel.quantidade_atual), 0))
             .select_from(EntradaModel).join(EstoqueModel, EstoqueModel.entrada_id == EntradaModel.id)
@@ -37,6 +37,17 @@ class LoteRepository:
 
         if validade_fim:
             conditions.append(LoteModel.data_validade <= validade_fim)
+
+        if disponivel_para_entrada:
+            conditions.append(
+                or_(
+                    LoteModel.data_validade.is_(None),
+                    LoteModel.data_validade >= func.current_date()
+                )
+            )
+
+        if somente_com_estoque:
+            conditions.append(estoque_total > 0)
 
         base = select(LoteModel).join(ProdutoModel, LoteModel.produto_id == ProdutoModel.id)
 

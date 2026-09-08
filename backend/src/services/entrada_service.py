@@ -24,6 +24,8 @@ class EntradaService:
             if lote.produto_id != produto.id:
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Lote não pertence ao produto.")
 
+            LoteService.validate_for_entry(lote)
+
             return lote
 
         lote_data = LoteCreateSchema(
@@ -32,7 +34,11 @@ class EntradaService:
             data_validade=novo_lote.data_validade
         )
 
-        return await LoteService.create(db=db, data=lote_data, commit=False)
+        lote = await LoteService.create(db=db, data=lote_data, commit=False)
+
+        LoteService.validate_for_entry(lote)
+
+        return lote
 
     @staticmethod
     async def create(db: AsyncSession, *, produto_id: int, data, current_user: UsuarioModel) -> EntradaResponseSchema:

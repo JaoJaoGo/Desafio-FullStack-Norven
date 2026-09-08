@@ -38,6 +38,10 @@ class LoteFilterSchema(SCBaseModel):
     produto_id: Optional[int] = Field(default=None, gt=0)
     validade_inicio: Optional[date] = None
     validade_fim: Optional[date] = None
+
+    disponivel_para_entrada: bool = False
+    somente_com_estoque: bool = False
+
     page: int = Field(default=1, ge=1)
     per_page: int = Field(default=20, ge=1, le=100)
 

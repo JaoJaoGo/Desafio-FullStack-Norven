@@ -1,12 +1,19 @@
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import date
+from typing import List
 
 from repositories.lote_repository import LoteRepository
 from repositories.produto_repository import ProdutoRepository
 from schemas.lote_schema import LoteCreateSchema, LoteFilterSchema, LoteResponseSchema, LoteUpdateSchema
 
 class LoteService:
+    @staticmethod
+    def validate_for_entry(lote) -> None:
+        if lote.data_validade is not None and lote.data_validade < date.today():
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Não é possível registrar uma entrada em um lote vencido.")
+
     @staticmethod
     async def validate_create(db: AsyncSession, data: LoteCreateSchema) -> None:
         produto = await ProdutoRepository.find_by_id(db, data.produto_id)
@@ -68,6 +75,8 @@ class LoteService:
             produto_id=filters.produto_id, 
             validade_inicio=filters.validade_inicio, 
             validade_fim=filters.validade_fim,
+            disponivel_para_entrada=filters.disponivel_para_entrada,
+            somente_com_estoque=filters.somente_com_estoque,
             page=filters.page,
             per_page=filters.per_page
         )

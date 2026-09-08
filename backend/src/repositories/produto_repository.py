@@ -53,10 +53,28 @@ class ProdutoRepository:
         )
 
     @staticmethod
+    def _lote_com_saldo_expr():
+        return (
+            select(EstoqueModel.id)
+            .select_from(EntradaModel)
+            .join(EstoqueModel, EstoqueModel.entrada_id == EntradaModel.id)
+            .where(EntradaModel.lote_id == LoteModel.id, EstoqueModel.quantidade_atual > 0)
+            .correlate(LoteModel)
+            .exists()
+        )
+
+    @staticmethod
     def _vencido_expr():
+        lote_com_saldo = ProdutoRepository._lote_com_saldo_expr()
+
         return (
             select(LoteModel.id)
-            .where(LoteModel.produto_id == ProdutoModel.id, LoteModel.data_validade.is_not(None), LoteModel.data_validade < func.current_date())
+            .where(
+                LoteModel.produto_id == ProdutoModel.id,
+                LoteModel.data_validade.is_not(None),
+                LoteModel.data_validade < func.current_date(),
+                lote_com_saldo
+            )
             .correlate(ProdutoModel)
             .exists()
         )
@@ -65,13 +83,16 @@ class ProdutoRepository:
     def _proximo_vencimento_expr():
         limite_validade = func.current_date() + settings.PRODUTO_VALIDADE_ALERTA_DIAS
 
+        lote_com_saldo  = ProdutoRepository._lote_com_saldo_expr()
+
         return (
             select(LoteModel.id)
             .where(
                 LoteModel.produto_id == ProdutoModel.id,
                 LoteModel.data_validade.is_not(None),
                 LoteModel.data_validade >= func.current_date(),
-                LoteModel.data_validade <= limite_validade
+                LoteModel.data_validade <= limite_validade,
+                lote_com_saldo
             )
             .correlate(ProdutoModel)
             .exists()

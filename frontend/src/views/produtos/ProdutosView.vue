@@ -154,6 +154,60 @@ export default defineComponent({
       }, 400)
     },
 
+    getValidadeAlertColor(value: string | null): string | undefined {
+      if (!value) {
+        return undefined
+      }
+
+      const parts = value.split('T')[0]?.split('-').map(Number)
+
+      if (!parts || parts.length !== 3) {
+        return undefined
+      }
+
+      const [year, month, day] = parts
+
+      if (!year || !month || !day) {
+        return undefined
+      }
+
+      const validate = new Date(year, month - 1, day)
+
+      validate.setHours(0, 0, 0, 0)
+
+      const hoje = new Date()
+
+      hoje.setHours(0, 0, 0, 0)
+
+      const difference = validate.getTime() - hoje.getTime()
+
+      const days = Math.round(difference / (1000 * 60 * 60 * 24))
+
+      if (days <= 0) {
+        return 'error'
+      }
+
+      if (days <= 30) {
+        return 'warning'
+      }
+
+      return undefined
+    },
+
+    getValidadeAlertTitle(value: string | null): string {
+      const color = this.getValidadeAlertColor(value)
+
+      if (color === 'error') {
+        return 'Produto vencido ou vecendo hoje'
+      }
+
+      if (color === 'warning') {
+        return 'Produto próximo do vencimento'
+      }
+
+      return ''
+    },
+
     normalizePriceFilter(value: string | null): string | undefined {
       const normalized = value?.trim().replace(',', '.')
 
@@ -334,7 +388,7 @@ export default defineComponent({
       this.validadeLotes = []
 
       try {
-        this.validadeLotes = await loteService.listAllByProduct(produto.id)
+        this.validadeLotes = await loteService.listAllByProduct(produto.id, false, true)
       } catch (error: unknown) {
         this.validadeDialog = false
 
@@ -641,11 +695,33 @@ export default defineComponent({
                 </td>
 
                 <td>
-                  {{
-                    formatDate(
-                      lote.data_validade,
-                    )
-                  }}
+                  <div class="d-flex align-center ga-2">
+                    <span>
+                      {{
+                        formatDate(
+                          lote.data_validade,
+                        )
+                      }}
+                    </span>
+
+                    <v-icon
+                      v-if="getValidadeAlertColor(lote.data_validade)"
+                      icon="mdi-alert-circle"
+                      :color="getValidadeAlertColor(lote.data_validade)"
+                      size="20"
+                      :title="getValidadeAlertTitle(lote.data_validade)"
+                    />
+                  </div>
+                </td>
+              </tr>
+              <tr
+                v-if="validadeLotes.length === 0"
+              >
+                <td
+                  colspan="2"
+                  class="text-center text-medium-emphasis py-6"
+                >
+                  Nenhum Lote com estoque disponível.
                 </td>
               </tr>
             </tbody>

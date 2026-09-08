@@ -1,6 +1,8 @@
+from datetime import datetime
 from decimal import Decimal
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 
 from models.entrada_model import EntradaModel
 from models.estoque_model import EstoqueModel

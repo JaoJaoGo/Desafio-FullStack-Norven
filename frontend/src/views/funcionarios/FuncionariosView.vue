@@ -73,7 +73,6 @@ export default defineComponent({
           key: 'view',
           title: 'Visualizar',
           icon: 'mdi-eye-outline',
-          disabled: true,
         },
         {
           key: 'edit',
@@ -204,6 +203,18 @@ export default defineComponent({
 
     async handleAction(event: DataTableActionEvent): Promise<void> {
       const funcionario = event.item as Funcionario
+
+      if (event.action === 'view') {
+        await this.$router.push({
+          name: 'funcionario-detail',
+
+          params: {
+            id: funcionario.id,
+          },
+        })
+
+        return
+      }
 
       if (event.action === 'edit') {
         if (this.isCurrentUser(funcionario)) {

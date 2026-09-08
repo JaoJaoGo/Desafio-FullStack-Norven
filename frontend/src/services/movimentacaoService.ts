@@ -58,4 +58,66 @@ export const movimentacaoService = {
             },
         )
     },
+
+    async listEntradasByFornecedor(fornecedorId: number, page: number, perPage: number): Promise<EntradaListResponse> {
+        const query = new URLSearchParams({
+            fornecedor_id: String(fornecedorId),
+            page: String(page),
+            per_page: String(perPage),
+        })
+
+        return apiRequest<EntradaListResponse>(
+            `/entradas/?${query.toString()}`,
+            {
+                method: 'GET',
+            },
+        )
+    },
+
+    async listSaidasByFuncionario(funcionarioId: number, page: number, perPage: number): Promise<SaidaListResponse> {
+        const query = new URLSearchParams({
+            usuario_id: String(funcionarioId),
+            page: String(page),
+            per_page: String(perPage),
+        })
+
+        return apiRequest<SaidaListResponse>(
+            `/saidas/?${query.toString()}`,
+            {
+                method: 'GET',
+            },
+        )
+    },
+
+    async getEntradaTotal(): Promise<number> {
+        const query = new URLSearchParams({
+            page: '1',
+            per_page: '1',
+        })
+
+        const response = await apiRequest<EntradaListResponse>(
+            `/entradas/?${query.toString()}`,
+            {
+                method: 'GET',
+            },
+        )
+
+        return response.total
+    },
+
+    async getSaidaTotal(): Promise<number> {
+        const query = new URLSearchParams({
+            page: '1',
+            per_page: '1',
+        })
+
+        const response = await apiRequest<SaidaListResponse>(
+            `/saidas/?${query.toString()}`,
+            {
+                method: 'GET',
+            },
+        )
+
+        return response.total
+    },
 }

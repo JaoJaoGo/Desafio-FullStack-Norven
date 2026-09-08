@@ -26,6 +26,7 @@ async def create_produto(data: ProdutoCreateSchema, db: AsyncSession = Depends(g
 async def list_produtos(
     nome: Optional[str] = Query(default=None, description="Filtra pelo nome do produto"),
     categoria_id: Optional[int] = Query(default=None, ge=1),
+    usuario_id: Optional[int] = Query(default=None, ge=1),
     categoria: Optional[str] = Query(default=None, description="Filtra pelo nome da categoria"),
     status_produto: Optional[ProdutoStatusEnum] = Query(default=None, alias="status"),
     preco_min: Optional[Decimal] = Query(default=None, ge=0),
@@ -40,6 +41,7 @@ async def list_produtos(
         nome=nome,
         categoria_id=categoria_id,
         categoria=categoria,
+        usuario_id=usuario_id,
         status=status_produto,
         preco_min=preco_min,
         preco_max=preco_max,

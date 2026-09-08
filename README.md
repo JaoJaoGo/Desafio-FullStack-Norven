@@ -1263,8 +1263,6 @@ http://localhost:8000/docs
 - [x] Testes de integração HTTP
 - [x] Transações para operações críticas de estoque
 - [x] Bloqueio pessimista de estoque nos fluxos de movimentação
-- [ ] Testes unitários
-- [ ] Tratamento global de exceções
 
 ## Frontend
 
@@ -1280,10 +1278,9 @@ http://localhost:8000/docs
 - [x] Página inicial
 - [x] Proteção de rotas
 - [x] Integração com a API
-- [ ] Páginas de gestão de estoque
-- [ ] Páginas de gestão de produtos
-- [ ] Páginas de gestão de fornecedores
-- [ ] Páginas de gestão de usuários
+- [x] Páginas de gestão de usuários
+- [x] Páginas de gestão de fornecedores
+- [x] Páginas de gestão de produtos
 
 ---
 

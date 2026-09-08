@@ -47,6 +47,7 @@ export interface ProdutoListResponse {
 
 export interface ProdutoListParams {
     nome?: string
+    usuarioId?: number
     status?: ProdutoStatus
     precoMin?: string
     precoMax?: string

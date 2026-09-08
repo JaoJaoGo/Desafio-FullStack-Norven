@@ -238,6 +238,10 @@ class ProdutoRepository:
         if filters.categoria:
             conditions.append(CategoriaModel.nome.ilike(f"%{filters.categoria.strip()}%"))
 
+        # Responsável pelo cadastro
+        if filters.usuario_id is not None:
+            conditions.append(ProdutoModel.usuario_id == filters.usuario_id)
+
         # Preço
         if filters.preco_min is not None:
             conditions.append(ProdutoModel.preco_venda_atual >= filters.preco_min)

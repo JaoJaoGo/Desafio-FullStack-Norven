@@ -49,6 +49,7 @@ class ProdutoFilterSchema(SCBaseModel):
     nome: Optional[str] = None
     categoria_id: Optional[int] = None
     categoria: Optional[str] = None
+    usuario_id: Optional[int] = None
     status: Optional[ProdutoStatusEnum] = None
     preco_min: Optional[Decimal] = Field(default=None, ge=0)
     preco_max: Optional[Decimal] = Field(default=None, ge=0)

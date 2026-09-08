@@ -12,6 +12,10 @@ export const produtoService = {
             query.set('nome', nome)
         }
 
+        if (params.usuarioId) {
+            query.set('usuario_id', String(params.usuarioId))
+        }
+
         if (params.status) {
             query.set('status', params.status)
         }

@@ -32,7 +32,6 @@ export default defineComponent({
           key: 'view',
           title: 'Visualizar',
           icon: 'mdi-eye-outline',
-          disabled: true,
         },
         {
           key: 'edit',
@@ -160,6 +159,18 @@ export default defineComponent({
 
     async handleAction(event: DataTableActionEvent): Promise<void> {
       const fornecedor = event.item as Fornecedor
+
+      if (event.action === 'view') {
+        await this.$router.push({
+          name: 'fornecedor-detail',
+
+          params: {
+            id: fornecedor.id,
+          },
+        })
+
+        return
+      }
 
       if (event.action === 'edit') {
         await this.$router.push({

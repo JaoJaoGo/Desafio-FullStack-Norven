@@ -8,8 +8,10 @@ import { useAuthStore } from '@/stores/auth'
 import InicioView from '@/views/InicioView.vue'
 import LoginView from '@/views/LoginView.vue'
 import FuncionariosView from '@/views/funcionarios/FuncionariosView.vue'
+import FuncionarioDetailView from '@/views/funcionarios/FuncionarioDetailView.vue'
 import FuncionarioFormView from '@/views/funcionarios/FuncionarioFormView.vue'
 import FornecedoresView from '@/views/fornecedores/FornecedoresView.vue'
+import FornecedorDetailView from '@/views/fornecedores/FornecedorDetailView.vue'
 import FornecedorFormView from '@/views/fornecedores/FornecedorFormView.vue'
 import ProdutosView from '@/views/produtos/ProdutosView.vue'
 import ProdutoFormView from '@/views/produtos/ProdutoFormView.vue'
@@ -47,6 +49,11 @@ const router = createRouter({
           component: FuncionarioFormView,
         },
         {
+          path: 'funcionarios/:id',
+          name: 'funcionario-detail',
+          component: FuncionarioDetailView
+        },
+        {
           path: 'fornecedores',
           name: 'fornecedores',
           component: FornecedoresView,
@@ -60,6 +67,11 @@ const router = createRouter({
           path: 'fornecedores/:id/editar',
           name: 'fornecedor-edit',
           component: FornecedorFormView,
+        },
+        {
+          path: 'fornecedores/:id',
+          name: 'fornecedor-detail',
+          component: FornecedorDetailView,
         },
         {
           path: 'produtos',

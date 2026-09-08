@@ -13,7 +13,7 @@ sys.path.insert(
 # Registra todos os models e relationships no SQLAlchemy
 import models.__all_models  # noqa: F401
 
-from core.database import Session
+from core.database import database
 
 from seeders.admin_seeder import seed_admin
 from seeders.geography_seeder import seed_geography
@@ -21,7 +21,7 @@ from seeders.geography_seeder import seed_geography
 async def run() -> None:
     print("Começando a seedar...")
 
-    async with Session() as session:
+    async with database.session_factory() as session:
         try:
             async with session.begin():
                 await seed_geography(session)

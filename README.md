@@ -68,6 +68,25 @@ SQLAlchemy Model
 PostgreSQL
 ```
 
+### Patterns utilizados
+
+Os patterns obrigatórios do desafio estão implementados explicitamente:
+
+- **Repository Pattern:** acesso e persistência de dados centralizados em `src/repositories/`;
+- **Service Layer:** regras de negócio, validações e controle transacional em `src/services/`;
+- **DTO:** schemas Pydantic em `src/schemas/`, utilizados para entrada, atualização, filtros e respostas da API;
+- **Singleton para conexão com o banco:** `src/core/database.py` mantém uma única instância do gerenciador de banco por processo, centralizando o `AsyncEngine` e a `session_factory`.
+
+A sessão de banco **não é Singleton**. Cada requisição recebe sua própria `AsyncSession` por meio de `get_session`, evitando compartilhamento indevido de estado e transações entre requisições.
+
+```text
+Database Singleton
+├── AsyncEngine
+└── session_factory
+       ↓
+   AsyncSession por requisição
+```
+
 ### Endpoints
 
 Responsáveis pela camada HTTP:
@@ -118,6 +137,15 @@ backend/
 │   ├── api/
 │   │   └── v1/
 │   │       └── endpoints/
+│   │           ├── auth.py
+│   │           ├── usuarios.py
+│   │           ├── fornecedores.py
+│   │           ├── produtos.py
+│   │           ├── lotes.py
+│   │           ├── entradas.py
+│   │           ├── estoques.py
+│   │           ├── saidas.py
+│   │           └── transacoes.py
 │   ├── controllers/
 │   ├── core/
 │   │   ├── auth.py
@@ -167,18 +195,52 @@ backend/
 ```text
 frontend/
 ├── src/
+│   ├── components/
+│   │   ├── AppDataTable.vue
+│   │   ├── AppHeader.vue
+│   │   └── AppSidebar.vue
+│   ├── layouts/
+│   │   ├── AppLayout.vue
+│   │   └── AuthLayout.vue
 │   ├── plugins/
 │   │   └── vuetify.ts
 │   ├── router/
 │   │   └── index.ts
 │   ├── services/
 │   │   ├── api.ts
-│   │   └── authService.ts
+│   │   ├── authService.ts
+│   │   ├── funcionarioService.ts
+│   │   ├── fornecedorService.ts
+│   │   ├── geografiaService.ts
+│   │   ├── produtoService.ts
+│   │   ├── loteService.ts
+│   │   ├── estoqueService.ts
+│   │   ├── movimentacaoService.ts
+│   │   └── transacaoService.ts
 │   ├── stores/
 │   │   └── auth.ts
 │   ├── types/
-│   │   └── auth.ts
+│   │   ├── auth.ts
+│   │   ├── funcionario.ts
+│   │   ├── fornecedor.ts
+│   │   ├── produto.ts
+│   │   ├── movimentacao.ts
+│   │   └── transacao.ts
 │   ├── views/
+│   │   ├── funcionarios/
+│   │   │   ├── FuncionariosView.vue
+│   │   │   ├── FuncionarioFormView.vue
+│   │   │   └── FuncionarioDetailView.vue
+│   │   ├── fornecedores/
+│   │   │   ├── FornecedoresView.vue
+│   │   │   ├── FornecedorFormView.vue
+│   │   │   └── FornecedorDetailView.vue
+│   │   ├── produtos/
+│   │   │   ├── ProdutosView.vue
+│   │   │   ├── ProdutoFormView.vue
+│   │   │   └── ProdutoDetailView.vue
+│   │   ├── transacoes/
+│   │   │   └── TransacoesView.vue
 │   │   ├── InicioView.vue
 │   │   └── LoginView.vue
 │   ├── App.vue
@@ -650,15 +712,15 @@ O frontend utiliza Vue.js com Options API e segue uma estrutura modular:
 
 ```text
 Vue Component
-     ↓
-Pinia Store
-     ↓
-Service
-     ↓
-API Request
-     ↓
-FastAPI Backend
+     ├── Pinia Store (estado global, quando necessário)
+     └── Service
+           ↓
+       API Request
+           ↓
+      FastAPI Backend
 ```
+
+As views principais são carregadas sob demanda pelo Vue Router por meio de imports dinâmicos, reduzindo o bundle inicial e permitindo **code splitting por rota**.
 
 ### Componentes
 
@@ -671,12 +733,13 @@ Responsáveis pela camada de apresentação:
 
 ### Stores (Pinia)
 
-Gerenciam o estado global da aplicação:
+Gerenciam estado global quando necessário. Atualmente, a store de autenticação concentra:
 
-- autenticação (token, usuário);
-- cache de dados;
-- ações assíncronas;
-- persistência no localStorage.
+- token;
+- usuário autenticado;
+- identificação do usuário atual;
+- recuperação e validação da sessão;
+- persistência no `localStorage`.
 
 ### Services
 
@@ -745,6 +808,8 @@ npm run type-check
 npm run lint
 npm run build
 ```
+
+As views são carregadas sob demanda pelo Vue Router, permitindo que o Vite gere chunks separados por rota e reduza o bundle JavaScript inicial da aplicação.
 
 Com o Vite em modo `--reload`, mudanças em arquivos podem ser detectadas sem reconstruir a imagem.
 
@@ -823,29 +888,37 @@ Isso permite que o frontend, rodando em uma porta diferente, possa se comunicar 
 ## Produtos
 
 - nome único;
-- código identificador;
+- código identificador único;
+- descrição;
 - preço de venda atual;
 - categoria;
 - unidade de medida;
 - indicação de produto perecível;
 - informação nutricional opcional;
-- filtros e paginação;
-- status calculado a partir de estoque e validade.
+- responsável e data de cadastro;
+- filtros por nome, status e intervalo de preço;
+- paginação;
+- saldo atual calculado a partir dos estoques;
+- múltiplos status simultâneos quando aplicável;
+- status de validade considerados somente para lotes que ainda possuem saldo.
 
 ## Lotes
 
 - vinculados a um produto;
 - número único dentro do mesmo produto;
 - produtos perecíveis exigem validade na criação do lote;
-- produto e validade do lote não são alterados depois da criação;
-- produtos não perecíveis podem possuir validade nula.
+- produtos não perecíveis podem possuir validade nula;
+- produto e validade do lote são imutáveis após a criação;
+- lotes vencidos não podem receber novas entradas;
+- lotes sem saldo permanecem armazenados para preservação do histórico e rastreabilidade.
 
 ## Entradas
 
 - vinculadas a produto, fornecedor, lote e usuário responsável;
 - aceitam lote existente ou criação de novo lote durante a entrada;
-- registram quantidade, custo, tipo, observação e data;
+- registram quantidade, preço de custo, tipo, observação e data/hora;
 - criam o estoque correspondente automaticamente;
+- bloqueiam novas entradas em lotes vencidos;
 - alteração de quantidade atualiza o saldo do estoque;
 - alterações que produziriam saldo inválido são bloqueadas;
 - localização física do estoque pode ser informada e atualizada;
@@ -881,9 +954,78 @@ Entradas e saídas registram:
 - quantidade;
 - produto e lote relacionados.
 
-O histórico de transações do produto reúne entradas e saídas e permite filtros para consulta e rastreabilidade.
+As transações não possuem endpoint de exclusão.
+
+O sistema disponibiliza:
+
+- histórico de transações por produto;
+- histórico global de transações;
+- filtros por produto, movimento, tipo, usuário responsável, quantidade e período de datas;
+- paginação server-side;
+- ordenação por data/hora mais recente;
+- visualização somente leitura para preservar a rastreabilidade.
 
 ---
+
+# Funcionalidades do frontend
+
+## Página inicial
+
+A página inicial funciona como dashboard e apresenta:
+
+- quantidade de produtos cadastrados;
+- quantidade de fornecedores;
+- quantidade de funcionários;
+- total de entradas;
+- total de saídas;
+- alertas de produtos sem estoque;
+- alertas de estoque baixo;
+- alertas de produtos próximos do vencimento;
+- alertas de produtos vencidos;
+- atalhos para os principais módulos do sistema.
+
+Os indicadores de status são independentes: um mesmo produto pode possuir mais de um status crítico simultaneamente.
+
+## Funcionários
+
+- listagem com busca e filtro por nível de acesso;
+- cadastro;
+- edição;
+- visualização detalhada;
+- bloqueio de edição da própria conta autenticada;
+- listagem dos produtos cadastrados pelo funcionário;
+- listagem das saídas registradas pelo funcionário.
+
+## Fornecedores
+
+- listagem com busca;
+- cadastro;
+- edição;
+- visualização detalhada;
+- listagem das entradas vinculadas ao fornecedor.
+
+## Produtos
+
+- listagem com filtros e paginação;
+- cadastro e edição;
+- visualização detalhada;
+- controle de lotes;
+- controle de estoque por localização;
+- registro de entradas;
+- registro de saídas;
+- exibição de múltiplos status;
+- sinalização visual de vencimento, proximidade da validade e estoque crítico.
+
+## Histórico global
+
+A página de histórico reúne entradas e saídas em uma única listagem somente leitura, com filtros por:
+
+- produto;
+- movimento (`ENTRADA` ou `SAIDA`);
+- tipo;
+- usuário responsável;
+- quantidade;
+- período de datas.
 
 # Paginação e filtros
 
@@ -1065,6 +1207,13 @@ A configuração da conexão está centralizada em:
 src/core/database.py
 ```
 
+O arquivo implementa o pattern **Singleton** para o gerenciamento do banco. A instância única mantém:
+
+- `AsyncEngine`;
+- `async_sessionmaker`.
+
+Cada requisição recebe uma `AsyncSession` própria por meio de `get_session`, mantendo isolamento entre requisições e permitindo o uso seguro de transações assíncronas.
+
 As configurações da aplicação ficam em:
 
 ```text
@@ -1219,27 +1368,39 @@ http://localhost:8000/docs
 
 # Status
 
-🚧 Projeto em desenvolvimento.
+✅ **Funcionalidades principais do desafio concluídas.**
+
+O projeto encontra-se em fase de estabilização, revisão, melhorias de usabilidade, correção de problemas e preparação para apresentação.
 
 ## Backend
 
 - [x] Infraestrutura Docker
 - [x] PostgreSQL
 - [x] SQLAlchemy assíncrono
+- [x] Singleton para gerenciamento da conexão com o banco
 - [x] Alembic
 - [x] Seeders
 - [x] Autenticação JWT
+- [x] Senhas criptografadas
 - [x] Models
 - [x] Schemas / DTOs
-- [x] Repositories
-- [x] Services
+- [x] Repository Pattern
+- [x] Service Layer
 - [x] Controllers
 - [x] Endpoints
 - [x] Paginação e filtros
+- [x] CRUD de usuários / funcionários
+- [x] CRUD de fornecedores
+- [x] CRUD de produtos
+- [x] Lotes e validade
 - [x] Entradas de estoque
 - [x] Estoque atual
 - [x] Saídas de estoque
-- [x] Histórico de transações
+- [x] Histórico global de transações
+- [x] Histórico de transações por produto
+- [x] Auditoria e rastreabilidade
+- [x] Transações de banco em operações críticas
+- [x] Bloqueio pessimista de estoque
 
 ## Testes de integração implementados
 
@@ -1257,31 +1418,28 @@ http://localhost:8000/docs
 - [x] Estoques
 - [x] Saídas
 
-## Qualidade
-
-- [x] Banco de testes separado
-- [x] Testes de integração HTTP
-- [x] Transações para operações críticas de estoque
-- [x] Bloqueio pessimista de estoque nos fluxos de movimentação
+> A suíte de testes deve continuar sendo expandida conforme novas melhorias e correções forem adicionadas.
 
 ## Frontend
 
-- [x] Estrutura do projeto
-- [x] Configuração do Vite
-- [x] Configuração do Vuetify
-- [x] Configuração do Vue Router
-- [x] Configuração do Pinia
-- [x] Serviço de API
-- [x] Serviço de autenticação
-- [x] Store de autenticação
-- [x] Página de login
-- [x] Página inicial
+- [x] Vue.js com Options API
+- [x] TypeScript
+- [x] Vuetify
+- [x] Pinia
+- [x] Vue Router
 - [x] Proteção de rotas
-- [x] Integração com a API
-- [x] Páginas de gestão de usuários
-- [x] Páginas de gestão de fornecedores
-- [x] Páginas de gestão de produtos
-
----
-
-A documentação será atualizada conforme novas funcionalidades forem adicionadas.
+- [x] Lazy loading das views / code splitting por rota
+- [x] Serviço HTTP centralizado
+- [x] Autenticação integrada à API
+- [x] Dashboard inicial com indicadores e alertas
+- [x] Gestão de usuários / funcionários
+- [x] Visualização detalhada de funcionários
+- [x] Gestão de fornecedores
+- [x] Visualização detalhada de fornecedores
+- [x] Gestão de produtos
+- [x] Visualização detalhada de produtos
+- [x] Controle de lotes e estoque
+- [x] Registro de entradas e saídas
+- [x] Histórico global de transações
+- [x] Filtros e paginação server-side
+- [x] Destaques visuais de status críticos

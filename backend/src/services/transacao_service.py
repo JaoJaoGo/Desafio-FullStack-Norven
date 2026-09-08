@@ -7,6 +7,14 @@ from schemas.transacao_schema import TransacaoFilterSchema, TransacaoResponseSch
 
 class TransacaoService:
     @staticmethod
+    async def list(db: AsyncSession, filters: TransacaoFilterSchema):
+        rows, total = await TransacaoRepository.list(db, filters)
+        
+        items = [TransacaoResponseSchema(**row) for row in rows]
+        
+        return items, total
+    
+    @staticmethod
     async def list_by_product(db: AsyncSession, produto_id: int, filters: TransacaoFilterSchema):
         produto = await ProdutoRepository.find_by_id(db, produto_id)
 

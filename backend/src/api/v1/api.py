@@ -11,6 +11,7 @@ from api.v1.endpoints.lotes import router as lotes_router
 from api.v1.endpoints.entradas import router as entradas_router
 from api.v1.endpoints.estoques import router as estoques_router
 from api.v1.endpoints.saidas import router as saidas_router
+from api.v1.endpoints.transacoes import router as transacao_router
 
 api_router = APIRouter()
 
@@ -25,3 +26,4 @@ api_router.include_router(lotes_router, prefix="/lotes", tags=["Lotes"])
 api_router.include_router(entradas_router, prefix="/entradas", tags=["Entradas"])
 api_router.include_router(estoques_router, prefix="/estoques", tags=["Estoques"])
 api_router.include_router(saidas_router, prefix="/saidas", tags=["Saídas"])
+api_router.include_router(transacao_router, prefix="/transacoes", tags=["Transações"])

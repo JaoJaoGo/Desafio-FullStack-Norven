@@ -5,17 +5,18 @@ import AppLayout from '@/layouts/AppLayout.vue'
 
 import { useAuthStore } from '@/stores/auth'
 
-import InicioView from '@/views/InicioView.vue'
-import LoginView from '@/views/LoginView.vue'
-import FuncionariosView from '@/views/funcionarios/FuncionariosView.vue'
-import FuncionarioDetailView from '@/views/funcionarios/FuncionarioDetailView.vue'
-import FuncionarioFormView from '@/views/funcionarios/FuncionarioFormView.vue'
-import FornecedoresView from '@/views/fornecedores/FornecedoresView.vue'
-import FornecedorDetailView from '@/views/fornecedores/FornecedorDetailView.vue'
-import FornecedorFormView from '@/views/fornecedores/FornecedorFormView.vue'
-import ProdutosView from '@/views/produtos/ProdutosView.vue'
-import ProdutoFormView from '@/views/produtos/ProdutoFormView.vue'
-import ProdutoDetailView from '@/views/produtos/ProdutoDetailView.vue'
+const InicioView = () => import('@/views/InicioView.vue')
+const LoginView = () => import('@/views/LoginView.vue')
+const FuncionariosView = () => import('@/views/funcionarios/FuncionariosView.vue')
+const FuncionarioDetailView = () => import('@/views/funcionarios/FuncionarioDetailView.vue')
+const FuncionarioFormView = () => import('@/views/funcionarios/FuncionarioFormView.vue')
+const FornecedoresView = () => import('@/views/fornecedores/FornecedoresView.vue')
+const FornecedorDetailView = () => import('@/views/fornecedores/FornecedorDetailView.vue')
+const FornecedorFormView = () => import('@/views/fornecedores/FornecedorFormView.vue')
+const ProdutosView = () => import('@/views/produtos/ProdutosView.vue')
+const ProdutoFormView = () => import('@/views/produtos/ProdutoFormView.vue')
+const ProdutoDetailView = () => import('@/views/produtos/ProdutoDetailView.vue')
+const TransacoesView = () => import('@/views/transacoes/TransacoesView.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -93,6 +94,11 @@ const router = createRouter({
           name: 'produto-edit',
           component: ProdutoFormView,
         },
+        {
+          path: 'transacoes',
+          name: 'transacoes',
+          component: TransacoesView,
+        }
       ],
     },
 

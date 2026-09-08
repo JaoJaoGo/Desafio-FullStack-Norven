@@ -51,6 +51,12 @@ export default defineComponent({
                   routeName: 'produtos',
                   disabled: false,
                 },
+                {
+                  title: "Histórico",
+                  icon: 'mdi-history',
+                  routeName: 'transacoes',
+                  disabled: false,
+                }
             ],
         }
     },

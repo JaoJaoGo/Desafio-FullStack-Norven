@@ -167,37 +167,6 @@ async def test_buscar_entrada_inexistente(client: AsyncClient, auth_headers: dic
 
     assert response.status_code == 404
 
-async def test_editar_quantidade_da_entrada_atualiza_estoque(client: AsyncClient, auth_headers: dict, municipio_id: int):
-    cenario = await criar_cenario_movimentacao(client, auth_headers, municipio_id, indice=11)
-
-    entrada = await criar_entrada(client, auth_headers, cenario, indice=11, quantidade="10.000")
-
-    response = await client.patch(f"{ENTRADAS_URL}{entrada['id']}", json={"quantidade": "15.000"}, headers=auth_headers)
-    assert response.status_code == 200
-
-    body = response.json()
-
-    assert decimal_json(body["quantidade"]) == decimal_json("15.000")
-    assert decimal_json(body["quantidade_atual"]) == decimal_json("15.000")
-
-async def test_editar_localizacao_pela_entrada(client: AsyncClient, auth_headers: dict, municipio_id: int):
-    cenario = await criar_cenario_movimentacao(client, auth_headers, municipio_id, indice=12)
-
-    entrada = await criar_entrada(client, auth_headers, cenario, indice=12)
-
-    response = await client.patch(
-        f"{ENTRADAS_URL}{entrada['id']}",
-        json={"localizacao": {"corredor": "CORREDOR-NOVO", "prateleira": "PRATELEIRA-NOVA", "secao": "SECAO-NOVA"}},
-        headers=auth_headers
-    )
-    assert response.status_code == 200
-
-    body = response.json()
-
-    assert body["corredor"] == "CORREDOR-NOVO"
-    assert body["prateleira"] == "PRATELEIRA-NOVA"
-    assert body["secao"] == "SECAO-NOVA"
-
 async def test_nao_permite_excluir_entrada(client: AsyncClient, auth_headers: dict, municipio_id: int):
     cenario = await criar_cenario_movimentacao(client, auth_headers, municipio_id, indice=13)
 

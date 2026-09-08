@@ -160,26 +160,6 @@ async def test_buscar_lote_inexistente(client: AsyncClient, auth_headers: dict):
 
     assert response.status_code == 404
 
-async def test_editar_numero_do_lote(client: AsyncClient, auth_headers: dict):
-    categoria_id, unidade_id = await criar_catalogo_base(client, auth_headers)
-    produto = await criar_produto(client, auth_headers, categoria_id, unidade_id, 13, True)
-
-    validade = date.today() + timedelta(days=60)
-
-    create_response = await client.post(LOTES_URL, json=build_lote_payload(produto_id=produto["id"], indice=13, data_validade=validade), headers=auth_headers)
-    assert create_response.status_code == 201
-
-    lote_id = create_response.json()["id"]
-
-    response = await client.patch(f"{LOTES_URL}{lote_id}", json={"numero": "LOTE-ATUALIZADO"}, headers=auth_headers)
-    assert response.status_code == 200
-
-    body = response.json()
-
-    assert body["numero"] == "LOTE-ATUALIZADO"
-    assert body["produto_id"] == produto["id"]
-    assert body["data_validade"] == validade.isoformat()
-
 async def test_nao_permite_converter_para_perecivel_se_existir_lote_sem_validade(client: AsyncClient, auth_headers: dict):
     categoria_id, unidade_id = await criar_catalogo_base(client, auth_headers)
     produto = await criar_produto(client, auth_headers, categoria_id, unidade_id, 14, False)

@@ -9,7 +9,6 @@ from core.deps import get_current_user, get_session
 from models.usuario_model import UsuarioModel
 from schemas.entrada_schema import EntradaCreateSchema, EntradaFilterSchema, EntradaListResponseSchema, EntradaResponseSchema
 
-
 router = APIRouter()
 
 @router.post('/', response_model=EntradaResponseSchema, status_code=status.HTTP_201_CREATED)

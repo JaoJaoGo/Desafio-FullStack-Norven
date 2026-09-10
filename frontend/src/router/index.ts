@@ -35,6 +35,11 @@ const router = createRouter({
           component: InicioView,
         },
         {
+          path: 'minha-conta/editar',
+          name: 'account-edit',
+          component: FuncionarioFormView,
+        },
+        {
           path: 'funcionarios',
           name: 'funcionarios',
           component: FuncionariosView,

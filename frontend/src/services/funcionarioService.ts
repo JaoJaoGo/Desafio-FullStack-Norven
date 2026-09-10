@@ -1,5 +1,13 @@
 import { apiRequest } from '@/services/api'
-import type { Funcionario, FuncionarioCreatePayload, FuncionarioDetail, FuncionarioListParams, FuncionarioListResponse, FuncionarioUpdatePayload } from '@/types/funcionario'
+import type {
+  ContaUpdatePayload,
+  Funcionario,
+  FuncionarioCreatePayload,
+  FuncionarioDetail,
+  FuncionarioListParams,
+  FuncionarioListResponse,
+  FuncionarioUpdatePayload,
+} from '@/types/funcionario'
 
 export const funcionarioService = {
   async list(params: FuncionarioListParams): Promise<FuncionarioListResponse> {
@@ -49,6 +57,19 @@ export const funcionarioService = {
   async update(funcionarioId: number, payload: FuncionarioUpdatePayload): Promise<FuncionarioDetail> {
     return apiRequest<FuncionarioDetail>(
       `/usuarios/${funcionarioId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      },
+    )
+  },
+
+  async updateCurrent(payload: ContaUpdatePayload): Promise<FuncionarioDetail> {
+    return apiRequest<FuncionarioDetail>(
+      `/usuarios/me`,
       {
         method: 'PATCH',
         headers: {

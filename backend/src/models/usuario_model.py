@@ -4,7 +4,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.configs import settings
 from core.enums import NivelAcessoEnum
-
+from models.endereco_model import EnderecoModel
+from models.contato_model import ContatoModel
+from models.produto_model import ProdutoModel
+from models.entrada_model import EntradaModel
+from models.saida_model import SaidaModel
 
 class UsuarioModel(settings.DBBaseModel):
     __tablename__ = "funcionarios"

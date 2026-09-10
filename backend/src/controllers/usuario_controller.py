@@ -2,7 +2,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.usuario_model import UsuarioModel
-from schemas.usuario_schema import UsuarioCreateSchema, UsuarioUpdateSchema
+from schemas.usuario_schema import UsuarioCreateSchema, UsuarioUpdateSchema, UsuarioSelfUpdateSchema
 from services.usuario_service import UsuarioService
 
 class UsuarioController:
@@ -21,3 +21,7 @@ class UsuarioController:
     @staticmethod
     async def update(usuario_id: int, data: UsuarioUpdateSchema, db: AsyncSession, current_user_id: int) -> UsuarioModel:
         return await UsuarioService.update(db=db, usuario_id=usuario_id, data=data, current_user_id=current_user_id)
+    
+    @staticmethod
+    async def update_current(data: UsuarioSelfUpdateSchema, db: AsyncSession, current_user_id: int) -> UsuarioModel:
+        return await UsuarioService.update_current(db=db, data=data, current_user_id=current_user_id)

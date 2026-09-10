@@ -39,13 +39,15 @@ Contem as telas associadas as rotas da aplicacao:
 - `produtos/`: listagem, detalhe e formulario de produtos.
 - `transacoes/`: historico de movimentacoes.
 
+O formulario de funcionarios tambem atende a rota `account-edit`, usada para a edicao da propria conta iniciada pelo `AppHeader`. Esse modo possui payload e titulo proprios e nao permite alterar e-mail ou nivel de acesso.
+
 As views coordenam carregamento, estado local da tela, validacao de formulario e navegacao. Requisicoes HTTP devem ser delegadas aos services.
 
 ### `src/components/`
 
 Contem componentes reutilizaveis de apresentacao e interacao. Os componentes de layout principais sao:
 
-- `AppHeader.vue`: cabecalho e acoes globais.
+- `AppHeader.vue`: cabecalho e acoes globais, incluindo o acesso para edicao da conta autenticada.
 - `AppSidebar.vue`: navegacao principal.
 - `AppDataTable.vue`: tabela com carregamento, paginacao e menu de acoes.
 

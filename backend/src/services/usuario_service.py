@@ -13,7 +13,7 @@ from repositories.usuario_repository import UsuarioRepository
 
 from schemas.contato_schema import ContatoCreateSchema
 from schemas.endereco_schema import EnderecoCreateSchema
-from schemas.usuario_schema import UsuarioCreateSchema, UsuarioUpdateSchema
+from schemas.usuario_schema import UsuarioCreateSchema, UsuarioUpdateSchema, UsuarioSelfUpdateSchema
 
 class UsuarioService:
     @staticmethod
@@ -181,6 +181,97 @@ class UsuarioService:
 
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Não foi possível atualizar o usuário. Verifique os dados informados.")
 
+        except Exception:
+            await db.rollback()
+            raise
+        
+    @staticmethod
+    async def update_current(db: AsyncSession, data: UsuarioSelfUpdateSchema, current_user_id: int) -> UsuarioModel:
+        usuario = await UsuarioRepository.find_by_id(db=db, usuario_id=current_user_id, with_relations=True)
+        
+        if usuario is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Usuário não encontrado.')
+        
+        try:
+            usuario_values = {}
+            
+            # ---------------------------------
+            # ENDEREÇO
+            # ---------------------------------
+            
+            if data.endereco is not None:
+                endereco_atual = usuario.endereco
+                
+                endereco_values = {
+                    "logradouro": endereco_atual.logradouro,
+                    "numero": endereco_atual.numero,
+                    "complemento": endereco_atual.complemento,
+                    "cep": endereco_atual.cep,
+                    "bairro": endereco_atual.bairro,
+                    "municipio_id": endereco_atual.municipio_id,
+                }
+                
+                endereco_values.update(data.endereco.model_dump(exclude_unset=True))
+                novo_endereco_data = EnderecoCreateSchema(**endereco_values)
+                
+                endereco = await EnderecoRepository.find_by_data(db, novo_endereco_data)
+                
+                if endereco is None:
+                    endereco = await EnderecoRepository.create(db, novo_endereco_data)
+                    
+                usuario_values["endereco_id"] = endereco.id
+                usuario.endereco = endereco
+            
+            # ---------------------------------
+            # CONTATO
+            # ---------------------------------
+            
+            if data.contato is not None:
+                contato_atual = usuario.contato
+                
+                contato_values = {
+                    "cod_pais": contato_atual.cod_pais,
+                    "ddd": contato_atual.ddd,
+                    "numero": contato_atual.numero,
+                }
+                
+                contato_values.update(data.contato.model_dump(exclude_unset=True))
+                novo_contato_data = ContatoCreateSchema(**contato_values)
+                
+                contato = await ContatoRepository.find_by_data(db, novo_contato_data)
+                
+                if contato is None:
+                    contato = await ContatoRepository.create(db, novo_contato_data)
+                    
+                usuario_values["contato_id"] = contato.id
+                usuario.contato = contato
+            
+            # ---------------------------------
+            # USUÁRIOS
+            # ---------------------------------
+            
+            if data.nome is not None:
+                usuario_values["nome"] = data.nome
+                
+            if data.password is not None:
+                usuario_values["password"] = get_password_hash(data.password)
+                
+            if usuario_values:
+                await UsuarioRepository.update(db, usuario, usuario_values)
+            
+            await db.commit()
+            
+            return await UsuarioService.find_by_id(db, current_user_id)
+        except HTTPException:
+            await db.rollback()
+            raise
+        except IntegrityError:
+            await db.rollback()
+            
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail='Não foi possível atualizar sua conta. Verifique os dados informados.'
+            )
         except Exception:
             await db.rollback()
             raise

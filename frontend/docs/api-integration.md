@@ -76,6 +76,16 @@ As views devem:
 
 Erros de validacao de dominio continuam sendo definidos pelo backend e chegam no campo `detail`.
 
+## Conta do usuario autenticado
+
+O menu do `AppHeader` disponibiliza a acao **Editar conta**, que navega para `minha-conta/editar`. A tela reutiliza o formulario de funcionarios em um modo especifico de conta e chama `funcionarioService.updateCurrent` para enviar:
+
+```http
+PATCH /api/v1/usuarios/me
+```
+
+Nesse modo, o frontend envia somente nome, senha, contato e endereco. Depois de uma atualizacao bem-sucedida, o store de autenticacao recarrega o usuario atual e a aplicacao retorna para a pagina inicial. A edicao administrativa de funcionarios usa o endpoint separado `/usuarios/{id}`.
+
 ## Adicao de um novo dominio
 
 1. Criar ou atualizar os tipos em `src/types/`.

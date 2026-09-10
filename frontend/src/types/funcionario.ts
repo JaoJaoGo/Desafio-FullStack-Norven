@@ -74,3 +74,10 @@ export interface FuncionarioCreatePayload {
 export type FuncionarioUpdatePayload = Omit<FuncionarioCreatePayload, 'password'> & {
     password?: string
 }
+
+export interface ContaUpdatePayload {
+    nome: string
+    password?: string
+    endereco: EnderecoPayload
+    contato: ContatoPayload
+}

@@ -10,6 +10,15 @@ Este documento registra comportamentos implementados no frontend. As regras de d
 - Rotas desconhecidas redirecionam para `/`.
 - Acoes de voltar, editar e criar devem usar os nomes de rota registrados no Vue Router.
 
+## Conta do usuario autenticado
+
+- O menu do cabecalho oferece a acao `Editar conta`.
+- A acao abre a rota `account-edit` (`/minha-conta/editar`).
+- O formulario permite atualizar nome, senha, contato e endereco da propria conta.
+- E-mail e nivel de acesso nao sao editaveis nesse modo.
+- Apos o salvamento, o usuario autenticado e recarregado no store e a aplicacao retorna para `inicio`.
+- A edicao de outro funcionario continua usando a rota administrativa `funcionario-edit`.
+
 ## Listagens
 
 As listagens usam carregamento assincrono e paginacao. O componente `AppDataTable`:

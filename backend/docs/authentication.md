@@ -12,6 +12,7 @@ Este documento descreve o sistema de autenticação do backend, incluindo OAuth2
 - [Segurança de Senhas](#segurança-de-senhas)
 - [Dependência de Autenticação](#dependência-de-autenticação)
 - [Proteção de Rotas](#proteção-de-rotas)
+- [Edição da Própria Conta](#edição-da-própria-conta)
 - [Boas Práticas](#boas-práticas)
 
 ---
@@ -614,6 +615,27 @@ async def get_me(current_user: UsuarioModel = Depends(get_current_user)):
 - Exige autenticação
 - Injeta o usuário autenticado
 - Usado para operações específicas do usuário
+
+## Edição da Própria Conta
+
+O usuário autenticado pode atualizar os próprios dados pessoais pela rota protegida:
+
+```http
+PATCH /api/v1/usuarios/me
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+O payload aceita somente os campos abaixo, todos opcionais:
+
+- `nome`;
+- `password`;
+- `endereco`;
+- `contato`.
+
+O e-mail e o nível de acesso não fazem parte desse contrato e não podem ser alterados por esse fluxo. A identificação do usuário é obtida do token, sem receber um `usuario_id` no corpo ou na URL.
+
+A atualização administrativa de outro funcionário continua sendo feita por `PATCH /api/v1/usuarios/{usuario_id}`. Essa rota rejeita a tentativa de editar o mesmo usuário autenticado; para esse caso, deve ser usada a rota `/me`.
 
 ### Erros de Autenticação
 

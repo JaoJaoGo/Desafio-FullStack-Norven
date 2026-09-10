@@ -19,9 +19,23 @@ export default defineComponent({
         }
     },
 
+    computed: {
+        currentUserName(): string {
+            const authStore = useAuthStore()
+
+            return authStore.user?.nome ?? 'Usuário'
+        },
+    },
+
     methods: {
         toggleNavigation(): void {
             this.drawer = !this.drawer
+        },
+
+        async editAccount(): Promise<void> {
+            await this.$router.push({
+                name: 'account-edit',
+            })
         },
 
         async logout(): Promise<void> {
@@ -41,7 +55,9 @@ export default defineComponent({
   <app-sidebar v-model="drawer" />
 
   <app-header
+    :user-name="currentUserName"
     @toggle-navigation="toggleNavigation"
+    @edit-account="editAccount"
     @logout="logout"
   />
 

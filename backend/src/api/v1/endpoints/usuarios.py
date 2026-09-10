@@ -6,7 +6,14 @@ from models.usuario_model import UsuarioModel
 from controllers.usuario_controller import UsuarioController
 from core.deps import get_session, get_current_user
 
-from schemas.usuario_schema import UsuarioCreateSchema, UsuarioDetailResponseSchema, UsuarioListResponseSchema, UsuarioResponseSchema, UsuarioUpdateSchema
+from schemas.usuario_schema import (
+    UsuarioCreateSchema,
+    UsuarioDetailResponseSchema,
+    UsuarioListResponseSchema,
+    UsuarioResponseSchema,
+    UsuarioUpdateSchema,
+    UsuarioSelfUpdateSchema
+)
 
 router = APIRouter()
 
@@ -39,12 +46,14 @@ async def list_usuarios(
         "per_page": per_page
     }
 
+@router.patch('/me', response_model=UsuarioDetailResponseSchema, dependencies=[Depends(get_current_user)])
+async def update_current_usuario(data: UsuarioSelfUpdateSchema, db: AsyncSession = Depends(get_session), current_user: UsuarioModel = Depends(get_current_user)):
+    return await UsuarioController.update_current(data=data, db=db, current_user_id=current_user.id)
 
 @router.get("/{usuario_id}", response_model=UsuarioDetailResponseSchema, dependencies=[Depends(get_current_user)])
 async def get_usuario(usuario_id: int, db: AsyncSession = Depends(get_session)):
     return await UsuarioController.find_by_id(usuario_id=usuario_id, db=db)
 
-
-@router.patch("/{usuario_id}", response_model=UsuarioDetailResponseSchema)
+@router.patch("/{usuario_id}", response_model=UsuarioDetailResponseSchema, dependencies=[Depends(get_current_user)])
 async def update_usuario(usuario_id: int, data: UsuarioUpdateSchema, db: AsyncSession = Depends(get_session), current_user: UsuarioModel = Depends(get_current_user)):
     return await UsuarioController.update(usuario_id=usuario_id, data=data, db=db, current_user_id=current_user.id)

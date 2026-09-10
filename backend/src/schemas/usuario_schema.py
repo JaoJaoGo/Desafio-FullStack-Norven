@@ -22,12 +22,22 @@ class UsuarioCreateSchema(SCBaseModel):
     contato: ContatoCreateSchema
 
 class UsuarioUpdateSchema(SCBaseModel):
-    nome: Optional[str] = None
+    nome: Optional[str] = Field(default=None, min_length=1, max_length=50)
     email: Optional[EmailStr] = None
     password: Optional[str] = Field(default=None, min_length=8, max_length=72)
     nivel_acesso: Optional[NivelAcessoEnum] = None
     endereco: Optional[EnderecoUpdateSchema] = None
     contato: Optional[ContatoUpdateSchema] = None
+    
+class UsuarioSelfUpdateSchema(SCBaseModel):
+    nome: Optional[str] = Field(default=None, min_length=1, max_length=50)
+    password: Optional[str] = Field(default=None, min_length=8, max_length=72)
+    endereco: Optional[EnderecoUpdateSchema] = None
+    contato: Optional[ContatoUpdateSchema] = None
+    
+    model_config = {
+        "extra": "forbid"
+    }
 
 class UsuarioResponseSchema(UsuarioBaseSchema):
     id: int

@@ -7,439 +7,499 @@ import { geografiaService } from '@/services/geografiaService'
 import { useAuthStore } from '@/stores/auth'
 
 import type { Cidade, Estado, Pais } from '@/types/geografia'
-import type { FuncionarioCreatePayload, FuncionarioUpdatePayload, NivelAcesso } from '@/types/funcionario'
+import type { ContaUpdatePayload, FuncionarioCreatePayload, FuncionarioUpdatePayload, NivelAcesso } from '@/types/funcionario'
 
 type ValidationRule = (value: unknown) => true | string
 
 interface FormReference {
-    validate: () => Promise<{
-        valid: boolean
-    }>
+  validate: () => Promise<{
+    valid: boolean
+  }>
 }
 
 interface SelectOption {
-    title: string
-    value: number
+  title: string
+  value: number
 }
 
 export default defineComponent({
-    name: 'FuncionarioFormView',
+  name: 'FuncionarioFormView',
 
-    data() {
-        return {
-            authStore: useAuthStore(),
+  data() {
+    return {
+      authStore: useAuthStore(),
 
-            loading: false,
-            saving: false,
-            errorMessage: '',
+      loading: false,
+      saving: false,
+      errorMessage: '',
 
-            paises: [] as Pais[],
-            estados: [] as Estado[],
-            cidades: [] as Cidade[],
+      paises: [] as Pais[],
+      estados: [] as Estado[],
+      cidades: [] as Cidade[],
 
-            loadingPaises: false,
-            loadingEstados: false,
-            loadingCidades: false,
+      loadingPaises: false,
+      loadingEstados: false,
+      loadingCidades: false,
 
-            form: {
-                nome: '',
-                email: '',
-                password: '',
+      form: {
+        nome: '',
+        email: '',
+        password: '',
 
-                nivel_acesso: 'operador' as NivelAcesso,
+        nivel_acesso: 'operador' as NivelAcesso,
 
-                contato: {
-                    cod_pais: '',
-                    ddd: '',
-                    numero: '',
-                },
+        contato: {
+          cod_pais: '',
+          ddd: '',
+          numero: '',
+        },
 
-                endereco: {
-                    logradouro: '',
-                    numero: '',
-                    complemento: '',
-                    cep: '',
-                    bairro: '',
-                    municipio_id: null as number | null,
-                },
+        endereco: {
+          logradouro: '',
+          numero: '',
+          complemento: '',
+          cep: '',
+          bairro: '',
+          municipio_id: null as number | null,
+        },
 
-                pais_id: null as number | null,
+        pais_id: null as number | null,
 
-                estado_id: null as number | null,
-            },
+        estado_id: null as number | null,
+      },
 
-            nivelAcessoOptions: [
-                {
-                    title: 'Administrador',
-                    value: 'administrador',
-                },
-                {
-                    title: 'Operador',
-                    value: 'operador',
-                },
-            ],
+      nivelAcessoOptions: [
+        {
+          title: 'Administrador',
+          value: 'administrador',
+        },
+        {
+          title: 'Operador',
+          value: 'operador',
+        },
+      ],
+    }
+  },
+
+  computed: {
+    isAccountEditMode(): boolean {
+      return this.$route.name === 'account-edit'
+    },
+
+    isEditMode(): boolean {
+      return this.$route.name === 'funcionario-edit' || this.isAccountEditMode
+    },
+
+    funcionarioId(): number | null {
+      if (this.isAccountEditMode) {
+        return this.authStore.currentUserId
+      }
+
+      if (!this.isEditMode) {
+        return null
+      }
+
+      const id = Number(this.$route.params.id)
+
+      return Number.isInteger(id) && id > 0 ? id : null
+    },
+
+    pageTitle(): string {
+      if (this.isAccountEditMode) {
+        return "Editar minha conta"
+      }
+
+      return this.isEditMode ? 'Editar funcionário' : 'Adicionar funcionário'
+    },
+
+    pageDescription(): string {
+      if (this.isAccountEditMode) {
+        return 'Atualize seus dados pessoais, contato, endereço e senha.'
+      }
+
+      return this.isEditMode ? 'Atualize os dados do funcionário, contato e endereço.' : 'Cadastre um novo funcionário no sistema.'
+    },
+
+    submitLabel(): string {
+      if (this.isAccountEditMode) {
+        return 'Salvar minha conta'
+      }
+
+      return this.isEditMode ? 'Salvar alterações' : 'Cadastrar funcionário'
+    },
+
+    paisOptions(): SelectOption[] {
+      return this.paises.map(pais => ({
+        value: pais.id,
+
+        title: pais.nome_pt ?? pais.nome ?? pais.sigla ?? `País ${pais.id}`
+      }))
+    },
+
+    estadoOptions(): SelectOption[] {
+      return this.estados.map(estado => ({
+        value: estado.id,
+
+        title: estado.uf ? `${estado.nome ?? ''} (${estado.uf})` : (estado.nome ?? `Estado ${estado.id}`),
+      }))
+    },
+
+    cidadeOptions(): SelectOption[] {
+      return this.cidades.map(cidade => ({
+        value: cidade.id,
+
+        title: cidade.nome ?? `Cidade ${cidade.id}`,
+      }))
+    },
+
+    requiredRules(): ValidationRule[] {
+      return [(value: unknown) => {
+        if (value === null || value === undefined || String(value).trim() === '') {
+          return 'Campo obrigatório.'
         }
+
+        return true
+      }]
     },
 
-    computed: {
-        isEditMode(): boolean {
-            return this.$route.name === 'funcionario-edit'
-        },
+    emailRules(): ValidationRule[] {
+      return [
+        ...this.requiredRules,
 
-        funcionarioId(): number | null {
-            if (!this.isEditMode) {
-                return null
-            }
+        (value: unknown) => {
+          const email = String(value)
 
-            const id = Number(this.$route.params.id)
+          const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
-            return Number.isInteger(id) && id > 0 ? id : null
-        },
-
-        pageTitle(): string {
-            return this.isEditMode ? 'Editar funcionário' : 'Adicionar funcionário'
-        },
-
-        pageDescription(): string {
-            return this.isEditMode ? 'Atualize os dados do funcionário, contato e endereço.' : 'Cadastre um novo funcionário no sistema.'
-        },
-
-        submitLabel(): string {
-            return this.isEditMode ? 'Salvar alterações' : 'Cadastrar funcionário'
-        },
-
-        paisOptions(): SelectOption[] {
-            return this.paises.map(pais => ({
-                value: pais.id,
-
-                title: pais.nome_pt ?? pais.nome ?? pais.sigla ?? `País ${pais.id}`
-            }))
-        },
-
-        estadoOptions(): SelectOption[] {
-            return this.estados.map(estado => ({
-                value: estado.id,
-
-                title: estado.uf ? `${estado.nome ?? ''} (${estado.uf})` : (estado.nome ?? `Estado ${estado.id}`),
-            }))
-        },
-
-        cidadeOptions(): SelectOption[] {
-            return this.cidades.map(cidade => ({
-                value: cidade.id,
-
-                title: cidade.nome ?? `Cidade ${cidade.id}`,
-            }))
-        },
-
-        requiredRules(): ValidationRule[] {
-            return [(value: unknown) => {
-                if (value === null || value === undefined || String(value).trim() === '') {
-                    return 'Campo obrigatório.'
-                }
-
-                return true
-            }]
-        },
-
-        emailRules(): ValidationRule[] {
-            return [
-                ...this.requiredRules,
-
-                (value: unknown) => {
-                    const email = String(value)
-
-                    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-
-                    return valid || 'Informe um e-mail válido.'
-                }
-            ]
-        },
-
-        passwordRules(): ValidationRule[] {
-            return [
-                (value: unknown) => {
-                    const password = String(value ?? '')
-
-                    if (this.isEditMode && password === '') {
-                        return true
-                    }
-
-                    if (password.length < 8) {
-                        return 'A senha deve possuir no mínimo 8 caracteres.'
-                    }
-
-                    if (password.length > 72) {
-                        return 'A senha deve possuir no máximo 72 caracteres.'
-                    }
-
-                    return true
-                }
-            ]
-        },
-
-        cepRules(): ValidationRule[] {
-            return [
-                ...this.requiredRules,
-
-                (value: unknown) => /^\d{5}-\d{3}$/.test(String(value)) || 'Informe o CEP no formato 00000-000.'
-            ]
-        },
+          return valid || 'Informe um e-mail válido.'
+        }
+      ]
     },
 
-    mounted() {
-        void this.initialize()
+    passwordRules(): ValidationRule[] {
+      return [
+        (value: unknown) => {
+          const password = String(value ?? '')
+
+          if (this.isEditMode && password === '') {
+            return true
+          }
+
+          if (password.length < 8) {
+            return 'A senha deve possuir no mínimo 8 caracteres.'
+          }
+
+          if (password.length > 72) {
+            return 'A senha deve possuir no máximo 72 caracteres.'
+          }
+
+          return true
+        }
+      ]
     },
 
-    methods: {
-        async initialize(): Promise<void> {
-            this.loading = true
-            this.errorMessage = ''
+    cepRules(): ValidationRule[] {
+      return [
+        ...this.requiredRules,
 
-            try {
-                await this.authStore.ensureCurrentUser()
-
-                await this.loadPaises()
-
-                if (this.isEditMode) {
-                    await this.loadFuncionario()
-                }
-            } catch (error: unknown) {
-                this.handleError(error, 'Não foi possível carregar o formulário.')
-            } finally {
-                this.loading = false
-            }
-        },
-
-        async loadPaises(): Promise<void> {
-            this.loadingPaises = true
-
-            try {
-                this.paises = await geografiaService.listPaises()
-            } finally {
-                this.loadingPaises = false
-            }
-        },
-
-        async loadEstados(paisId: number): Promise<void> {
-            this.loadingEstados = true
-
-            try {
-                this.estados = await geografiaService.listEstados(paisId)
-            } finally {
-                this.loadingEstados = false
-            }
-        },
-
-        async loadCidades(estadoId: number): Promise<void> {
-            this.loadingCidades = true
-
-            try {
-                this.cidades = await geografiaService.listCidades(estadoId)
-            } finally {
-                this.loadingCidades = false
-            }
-        },
-
-        async loadFuncionario(): Promise<void> {
-            const funcionarioId = this.funcionarioId
-
-            if (!funcionarioId) {
-                throw new Error('Funcionário inválido.')
-            }
-
-            if (funcionarioId === this.authStore.currentUserId) {
-                await this.$router.replace({ name: 'funcionarios' })
-
-                return
-            }
-
-            const funcionario = await funcionarioService.findById(funcionarioId)
-
-            const hierarquia = await geografiaService.findCidadeHierarquia(funcionario.endereco.municipio_id)
-
-            this.form.nome = funcionario.nome
-
-            this.form.email = funcionario.email
-
-            this.form.password = ''
-
-            this.form.nivel_acesso = funcionario.nivel_acesso
-
-            this.form.contato = {
-                cod_pais: funcionario.contato.cod_pais,
-                ddd: funcionario.contato.ddd,
-                numero: funcionario.contato.numero,
-            }
-
-            this.form.endereco = {
-                logradouro: funcionario.endereco.logradouro,
-                numero: funcionario.endereco.numero,
-                complemento: funcionario.endereco.complemento ?? '',
-                cep: funcionario.endereco.cep,
-                bairro: funcionario.endereco.bairro,
-                municipio_id: hierarquia.cidade.id,
-            }
-
-            this.form.pais_id = hierarquia.pais.id
-
-            await this.loadEstados(hierarquia.pais.id)
-
-            this.form.estado_id = hierarquia.estado.id
-
-            await this.loadCidades(hierarquia.estado.id)
-        },
-
-        async onPaisChange(paisId: number | null): Promise<void> {
-            this.form.estado_id = null
-
-            this.form.endereco.municipio_id = null
-
-            this.estados = []
-            this.cidades = []
-
-            if (!paisId) {
-                return
-            }
-
-            try {
-                await this.loadEstados(paisId)
-            } catch (
-            error: unknown
-            ) {
-                this.handleError(error, 'Não foi possível carregar os estados.')
-            }
-        },
-
-        async onEstadoChange(estadoId: number | null): Promise<void> {
-            this.form.endereco.municipio_id = null
-
-            this.cidades = []
-
-            if (!estadoId) {
-                return
-            }
-
-            try {
-                await this.loadCidades(estadoId)
-            } catch (
-            error: unknown
-            ) {
-                this.handleError(error, 'Não foi possível carregar as cidades.')
-            }
-        },
-
-        updateCep(value: string | null): void {
-            const digits = String(value ?? '').replace(/\D/g, '').slice(0, 8)
-
-            if (digits.length <= 5) {
-                this.form.endereco.cep = digits
-                return
-            }
-
-            this.form.endereco.cep = `${digits.slice(0, 5)}-${digits.slice(5)}`
-        },
-
-        buildCreatePayload(): FuncionarioCreatePayload {
-            return {
-                nome: this.form.nome.trim(),
-                email: this.form.email.trim(),
-                password: this.form.password,
-                nivel_acesso: this.form.nivel_acesso,
-
-                contato: {
-                    cod_pais: this.form.contato.cod_pais.trim(),
-                    ddd: this.form.contato.ddd.trim(),
-                    numero: this.form.contato.numero.trim(),
-                },
-
-                endereco: {
-                    logradouro: this.form.endereco.logradouro.trim(),
-                    numero: this.form.endereco.numero.trim(),
-                    complemento: this.form.endereco.complemento.trim() || null,
-                    cep: this.form.endereco.cep.trim(),
-                    bairro: this.form.endereco.bairro.trim(),
-                    municipio_id: Number(this.form.endereco.municipio_id),
-                },
-            }
-        },
-
-        buildUpdatePayload(): FuncionarioUpdatePayload {
-            const createPayload = this.buildCreatePayload()
-
-            const payload:
-                FuncionarioUpdatePayload = {
-                nome: createPayload.nome,
-                email: createPayload.email,
-                nivel_acesso: createPayload.nivel_acesso,
-                contato: createPayload.contato,
-                endereco: createPayload.endereco,
-            }
-
-            if (this.form.password) {
-                payload.password = this.form.password
-            }
-
-            return payload
-        },
-
-        async submit(): Promise<void> {
-            this.errorMessage = ''
-
-            const form = this.$refs.form as unknown as FormReference
-
-            const validation = await form.validate()
-
-            if (!validation.valid) {
-                return
-            }
-
-            this.saving = true
-
-            try {
-                if (this.isEditMode) {
-                    const funcionarioId = this.funcionarioId
-
-                    if (!funcionarioId) {
-                        throw new Error('Funcionário inválido.')
-                    }
-
-                    if (funcionarioId === this.authStore.currentUserId) {
-                        this.errorMessage = 'Não é permitido editar sua própria conta.'
-                        return
-                    }
-
-                    await funcionarioService.update(funcionarioId, this.buildUpdatePayload())
-                } else {
-                    await funcionarioService.create(this.buildCreatePayload())
-                }
-
-                await this.$router.push({ name: 'funcionarios' })
-            } catch (
-            error: unknown
-            ) {
-                this.handleError(error, this.isEditMode ? 'Não foi possível atualizar o funcionário.' : 'Não foi possível cadastrar o funcionário.')
-            } finally {
-                this.saving = false
-            }
-        },
-
-        handleError(error: unknown, fallback: string): void {
-            if (error instanceof ApiError) {
-                this.errorMessage = error.message
-
-                return
-            }
-
-            this.errorMessage = fallback
-        },
-
-        async cancel(): Promise<void> {
-            await this.$router.push({
-                name: 'funcionarios',
-            })
-        },
+        (value: unknown) => /^\d{5}-\d{3}$/.test(String(value)) || 'Informe o CEP no formato 00000-000.'
+      ]
     },
+  },
+
+  mounted() {
+    void this.initialize()
+  },
+
+  methods: {
+    async initialize(): Promise<void> {
+      this.loading = true
+      this.errorMessage = ''
+
+      try {
+        await this.authStore.ensureCurrentUser()
+
+        await this.loadPaises()
+
+        if (this.isEditMode) {
+          await this.loadFuncionario()
+        }
+      } catch (error: unknown) {
+        this.handleError(error, 'Não foi possível carregar o formulário.')
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async loadPaises(): Promise<void> {
+      this.loadingPaises = true
+
+      try {
+        this.paises = await geografiaService.listPaises()
+      } finally {
+        this.loadingPaises = false
+      }
+    },
+
+    async loadEstados(paisId: number): Promise<void> {
+      this.loadingEstados = true
+
+      try {
+        this.estados = await geografiaService.listEstados(paisId)
+      } finally {
+        this.loadingEstados = false
+      }
+    },
+
+    async loadCidades(estadoId: number): Promise<void> {
+      this.loadingCidades = true
+
+      try {
+        this.cidades = await geografiaService.listCidades(estadoId)
+      } finally {
+        this.loadingCidades = false
+      }
+    },
+
+    async loadFuncionario(): Promise<void> {
+      const funcionarioId = this.funcionarioId
+
+      if (!funcionarioId) {
+        throw new Error('Funcionário inválido.')
+      }
+
+      if (!this.isAccountEditMode && funcionarioId === this.authStore.currentUserId) {
+        await this.$router.replace({ name: 'funcionarios' })
+
+        return
+      }
+
+      const funcionario = await funcionarioService.findById(funcionarioId)
+
+      const hierarquia = await geografiaService.findCidadeHierarquia(funcionario.endereco.municipio_id)
+
+      this.form.nome = funcionario.nome
+
+      this.form.email = funcionario.email
+
+      this.form.password = ''
+
+      this.form.nivel_acesso = funcionario.nivel_acesso
+
+      this.form.contato = {
+        cod_pais: funcionario.contato.cod_pais,
+        ddd: funcionario.contato.ddd,
+        numero: funcionario.contato.numero,
+      }
+
+      this.form.endereco = {
+        logradouro: funcionario.endereco.logradouro,
+        numero: funcionario.endereco.numero,
+        complemento: funcionario.endereco.complemento ?? '',
+        cep: funcionario.endereco.cep,
+        bairro: funcionario.endereco.bairro,
+        municipio_id: hierarquia.cidade.id,
+      }
+
+      this.form.pais_id = hierarquia.pais.id
+
+      await this.loadEstados(hierarquia.pais.id)
+
+      this.form.estado_id = hierarquia.estado.id
+
+      await this.loadCidades(hierarquia.estado.id)
+    },
+
+    async onPaisChange(paisId: number | null): Promise<void> {
+      this.form.estado_id = null
+
+      this.form.endereco.municipio_id = null
+
+      this.estados = []
+      this.cidades = []
+
+      if (!paisId) {
+        return
+      }
+
+      try {
+        await this.loadEstados(paisId)
+      } catch (
+      error: unknown
+      ) {
+        this.handleError(error, 'Não foi possível carregar os estados.')
+      }
+    },
+
+    async onEstadoChange(estadoId: number | null): Promise<void> {
+      this.form.endereco.municipio_id = null
+
+      this.cidades = []
+
+      if (!estadoId) {
+        return
+      }
+
+      try {
+        await this.loadCidades(estadoId)
+      } catch (
+      error: unknown
+      ) {
+        this.handleError(error, 'Não foi possível carregar as cidades.')
+      }
+    },
+
+    updateCep(value: string | null): void {
+      const digits = String(value ?? '').replace(/\D/g, '').slice(0, 8)
+
+      if (digits.length <= 5) {
+        this.form.endereco.cep = digits
+        return
+      }
+
+      this.form.endereco.cep = `${digits.slice(0, 5)}-${digits.slice(5)}`
+    },
+
+    buildCreatePayload(): FuncionarioCreatePayload {
+      return {
+        nome: this.form.nome.trim(),
+        email: this.form.email.trim(),
+        password: this.form.password,
+        nivel_acesso: this.form.nivel_acesso,
+
+        contato: {
+          cod_pais: this.form.contato.cod_pais.trim(),
+          ddd: this.form.contato.ddd.trim(),
+          numero: this.form.contato.numero.trim(),
+        },
+
+        endereco: {
+          logradouro: this.form.endereco.logradouro.trim(),
+          numero: this.form.endereco.numero.trim(),
+          complemento: this.form.endereco.complemento.trim() || null,
+          cep: this.form.endereco.cep.trim(),
+          bairro: this.form.endereco.bairro.trim(),
+          municipio_id: Number(this.form.endereco.municipio_id),
+        },
+      }
+    },
+
+    buildUpdatePayload(): FuncionarioUpdatePayload {
+      const createPayload = this.buildCreatePayload()
+
+      const payload:
+        FuncionarioUpdatePayload = {
+        nome: createPayload.nome,
+        email: createPayload.email,
+        nivel_acesso: createPayload.nivel_acesso,
+        contato: createPayload.contato,
+        endereco: createPayload.endereco,
+      }
+
+      if (this.form.password) {
+        payload.password = this.form.password
+      }
+
+      return payload
+    },
+
+    buildAccountUpdatePayload(): ContaUpdatePayload {
+      const payload: ContaUpdatePayload = {
+        nome: this.form.nome.trim(),
+
+        contato: {
+          cod_pais: this.form.contato.cod_pais.trim(),
+          ddd: this.form.contato.ddd.trim(),
+          numero: this.form.contato.numero.trim(),
+        },
+
+        endereco: {
+          logradouro: this.form.endereco.logradouro.trim(),
+          numero: this.form.endereco.numero.trim(),
+          complemento: this.form.endereco.complemento.trim() || null,
+          cep: this.form.endereco.cep.trim(),
+          bairro: this.form.endereco.bairro.trim(),
+          municipio_id: Number(this.form.endereco.municipio_id),
+        },
+      }
+
+      if (this.form.password) {
+        payload.password = this.form.password
+      }
+
+      return payload
+    },
+
+    async submit(): Promise<void> {
+      this.errorMessage = ''
+
+      const form = this.$refs.form as unknown as FormReference
+      const validation = await form.validate()
+
+      if (!validation.valid) {
+        return
+      }
+
+      this.saving = true
+
+      try {
+        if (this.isAccountEditMode) {
+          await funcionarioService.updateCurrent(this.buildAccountUpdatePayload())
+
+          await this.authStore.fetchCurrentUser()
+
+          await this.$router.push({
+            name: 'inicio',
+          })
+
+          return
+        }
+
+        if (this.isEditMode) {
+          const funcionarioId = this.funcionarioId
+
+          if (!funcionarioId) {
+            throw new Error('Funcionário inválido.')
+          }
+
+          if (funcionarioId === this.authStore.currentUserId) {
+            this.errorMessage = 'Não é permitido editar sua própria conta.'
+            return
+          }
+
+          await funcionarioService.update(funcionarioId, this.buildUpdatePayload())
+        } else {
+          await funcionarioService.create(this.buildCreatePayload())
+        }
+
+        await this.$router.push({ name: 'funcionarios' })
+      } catch (error: unknown) {
+        this.handleError(
+          error,
+          this.isAccountEditMode ? 'Não foi possível atualizar sua conta.'
+            : this.isEditMode ? 'Não foi possível atualizar o funcionário.' : 'Não foi possível cadastrar o funcionário.',
+        )
+      } finally {
+        this.saving = false
+      }
+    },
+
+    handleError(error: unknown, fallback: string): void {
+      if (error instanceof ApiError) {
+        this.errorMessage = error.message
+
+        return
+      }
+
+      this.errorMessage = fallback
+    },
+
+    async cancel(): Promise<void> {
+      await this.$router.push({
+        name: this.isAccountEditMode ? 'inicio' : 'funcionarios',
+      })
+    },
+  },
 })
 </script>
 
@@ -494,11 +554,11 @@ export default defineComponent({
         class="mb-6"
       >
         <v-card-title class="pa-6 pb-2">
-          Dados do funcionário
+          {{ isAccountEditMode ? 'Dados da conta' : 'Dados do funcionario' }}
         </v-card-title>
 
         <v-card-subtitle class="px-6">
-          Informações de acesso e identificação.
+          {{ isAccountEditMode ? 'E-mail e nível de acesso não podem ser alterados.' : 'Informações de acesso e identificação.' }}
         </v-card-subtitle>
 
         <v-card-text class="pa-6">
@@ -523,6 +583,7 @@ export default defineComponent({
             >
               <v-text-field
                 v-model="form.email"
+                :readonly="isAccountEditMode"
                 label="E-mail"
                 type="email"
                 variant="outlined"
@@ -537,6 +598,7 @@ export default defineComponent({
             >
               <v-select
                 v-model="form.nivel_acesso"
+                :readonly="isAccountEditMode"
                 :items="nivelAcessoOptions"
                 label="Nível de acesso"
                 variant="outlined"
@@ -792,25 +854,25 @@ export default defineComponent({
 
 <style scoped>
 .page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .form-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    padding-bottom: 32px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-bottom: 32px;
 }
 
 @media (max-width: 700px) {
-    .form-actions {
-        flex-direction: column-reverse;
-    }
+  .form-actions {
+    flex-direction: column-reverse;
+  }
 
-    .form-actions :deep(.v-btn) {
-        width: 100%;
-    }
+  .form-actions :deep(.v-btn) {
+    width: 100%;
+  }
 }
 </style>

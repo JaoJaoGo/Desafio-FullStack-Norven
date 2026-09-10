@@ -856,6 +856,8 @@ O endpoint de login utiliza o fluxo OAuth2 Password e recebe o e-mail no campo `
 
 As rotas protegidas utilizam o usuário recuperado a partir do token para identificar o responsável pelas operações auditáveis.
 
+Usuários autenticados podem atualizar os próprios dados pessoais pela rota protegida `PATCH /api/v1/usuarios/me`. Esse fluxo permite alterar nome, senha, contato e endereço, mas não e-mail ou nível de acesso. A edição administrativa de outro funcionário permanece disponível pela rota `PATCH /api/v1/usuarios/{usuario_id}`; essa rota rejeita tentativas de editar a própria conta.
+
 ## CORS
 
 O backend está configurado para aceitar requisições do frontend via CORS:
@@ -873,6 +875,10 @@ Isso permite que o frontend, rodando em uma porta diferente, possa se comunicar 
 ## Usuários
 
 - cadastro com nome, e-mail, senha, contato e endereço;
+- edição da própria conta pelo atalho **Editar conta** no menu do cabeçalho;
+- atualização da própria conta por `PATCH /api/v1/usuarios/me`, limitada a nome, senha, contato e endereço;
+- e-mail e nível de acesso não podem ser alterados pelo fluxo de edição da própria conta;
+- edição administrativa de outros funcionários por `PATCH /api/v1/usuarios/{usuario_id}`;
 - endereço vinculado a município;
 - consulta de estado e município baseada nos dados geográficos;
 - e-mail único;
@@ -991,8 +997,9 @@ Os indicadores de status são independentes: um mesmo produto pode possuir mais 
 - listagem com busca e filtro por nível de acesso;
 - cadastro;
 - edição;
+- edição da própria conta pelo menu do cabeçalho, com formulário específico;
 - visualização detalhada;
-- bloqueio de edição da própria conta autenticada;
+- bloqueio da edição da própria conta pela rota administrativa de funcionários;
 - listagem dos produtos cadastrados pelo funcionário;
 - listagem das saídas registradas pelo funcionário.
 

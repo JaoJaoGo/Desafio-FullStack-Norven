@@ -1,42 +1,15 @@
-# frontend
+# Documentacao do Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Esta pasta descreve a arquitetura, os fluxos de autenticacao, a integracao com a API e as regras de interface do frontend do Desafio FullStack Norven.
 
-## Recommended IDE Setup
+## Documentos
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- [Arquitetura](docs/architecture.md): camadas da aplicacao, responsabilidades e fluxo de dados.
+- [Autenticacao](docs/authentication.md): login, sessao no navegador e protecao de rotas.
+- [Integracao com a API](docs/api-integration.md): configuracao, contratos de requisicao e tratamento de erros.
+- [Regras de Interface](docs/business-rules.md): navegacao, listagens, formularios e comportamentos comuns.
+- [Desenvolvimento](docs/development.md): requisitos locais, comandos e variaveis de ambiente.
 
-## Recommended Browser Setup
+## Escopo
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
+A documentacao do frontend cobre apenas o comportamento da aplicacao cliente. Regras de dominio, persistencia e autenticacao no servidor estao documentadas em `../../backend/docs/`.

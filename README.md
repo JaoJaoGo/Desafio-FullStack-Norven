@@ -261,16 +261,37 @@ frontend/
 
 # Como executar o projeto
 
-## 1. Pré-requisitos
+## 1. Obter o código no GitHub
+
+Clone o repositório:
+
+```bash
+git clone https://github.com/JaoJaoGo/Desafio-FullStack-Norven.git
+cd Desafio-FullStack-Norven
+```
+
+Se você já tiver o projeto localmente, atualize com:
+
+```bash
+git pull
+```
+
+Os demais passos devem ser executados a partir da raiz do repositório.
+
+---
+
+## 2. Pré-requisitos
 
 Para executar o projeto utilizando Docker:
 
+- Git
 - Docker
 - Docker Compose
 
 Verifique a instalação:
 
 ```bash
+git --version
 docker --version
 docker compose version
 ```
@@ -295,9 +316,9 @@ mesmo com o backend funcionando no Docker, normalmente significa que o **ambient
 
 ---
 
-## 2. Configurar os arquivos da aplicação
+## 3. Configurar os arquivos da aplicação
 
-### 2.1 Docker Compose
+### 3.1 Docker Compose
 
 Crie o arquivo de configuração a partir do exemplo:
 
@@ -323,7 +344,7 @@ Também confira o `healthcheck` do serviço PostgreSQL.
 
 > **Importante:** não versione credenciais reais.
 
-### 2.2 Configurações do backend
+### 3.2 Configurações do backend
 
 Crie o arquivo de configuração:
 
@@ -349,7 +370,7 @@ print(secrets.token_urlsafe(32))
 
 > **Importante:** `src/core/configs.py` não deve conter segredos versionados.
 
-### 2.3 Configurações do frontend
+### 3.3 Configurações do frontend
 
 Entre na pasta `frontend` e crie o arquivo de configuração:
 
@@ -377,11 +398,11 @@ VITE_API_BASE_URL=http://localhost:8000/api/v1
 
 ---
 
-## 3. Instalar / sincronizar dependências para desenvolvimento
+## 4. Instalar / sincronizar dependências para desenvolvimento
 
 > Esta etapa é necessária quando você deseja executar ferramentas no host ou fazer o editor reconhecer corretamente as dependências. Para apenas executar a aplicação pelos containers, o `docker compose up -d --build` já deve instalar as dependências dentro das imagens.
 
-### 3.1 Backend
+### 4.1 Backend
 
 Entre na pasta `backend`:
 
@@ -437,7 +458,7 @@ docker compose exec backend uv run python -m seeders.database_seeder
 docker compose exec backend uv run pytest
 ```
 
-### 3.2 Frontend
+### 4.2 Frontend
 
 Entre na pasta `frontend`:
 
@@ -469,7 +490,7 @@ npm run build
 
 Se o frontend estiver sendo executado somente pelo Docker, o container também instala/utiliza suas próprias dependências. O `npm install` no host é recomendado para desenvolvimento e ferramentas do editor.
 
-### 3.3 Resumo: host x Docker
+### 4.3 Resumo: host x Docker
 
 ```text
 Host
@@ -496,7 +517,7 @@ Portanto, um erro de importação mostrado pelo editor no host **não significa 
 
 ---
 
-## 4. Comunicação entre os containers
+## 5. Comunicação entre os containers
 
 O PostgreSQL e o backend executam em containers diferentes e se comunicam pela rede criada pelo Docker Compose.
 
@@ -519,7 +540,7 @@ Dentro do container do backend, `localhost` apontaria para o próprio container 
 
 ---
 
-## 5. Criar e iniciar os containers
+## 6. Criar e iniciar os containers
 
 Execute os comandos do Docker Compose na pasta onde está o arquivo `docker-compose.yml` — neste projeto, a pasta `backend`:
 
@@ -586,7 +607,7 @@ docker compose down -v
 
 ---
 
-## 6. Executar migrations
+## 7. Executar migrations
 
 Esta etapa é obrigatória na primeira execução:
 
@@ -634,7 +655,7 @@ docker compose exec backend uv run alembic history
 
 ---
 
-## 7. Executar seeders
+## 8. Executar seeders
 
 Após as migrations:
 
@@ -672,7 +693,7 @@ O processo de seed:
 
 ---
 
-## 8. Acessar a aplicação
+## 9. Acessar a aplicação
 
 Com os containers ativos e o banco preparado:
 
@@ -1291,6 +1312,13 @@ docs: atualizar instruções de execução do projeto
 # Resumo para primeira execução
 
 ## Opção recomendada: aplicação executada com Docker
+
+Primeiro, clone o repositório (ou atualize com `git pull` se já existir localmente):
+
+```bash
+git clone https://github.com/JaoJaoGo/Desafio-FullStack-Norven.git
+cd Desafio-FullStack-Norven
+```
 
 Partindo da raiz do repositório:
 

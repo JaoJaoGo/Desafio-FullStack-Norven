@@ -14,18 +14,18 @@ from models.usuario_model import UsuarioModel
 SEED_USER_PASSWORD = "Norven@123"
 
 USUARIOS = [
-    ("Ana Souza", "ana.souza@norven.test", NivelAcessoEnum.ADMINISTRADOR, ("Goiânia", "GO"), "Rua 1", "120", "Setor Oeste", "74110-010", "62", "991000001"),
-    ("Bruno Lima", "bruno.lima@norven.test", NivelAcessoEnum.ADMINISTRADOR, ("Goiânia", "GO"), "Rua 2", "215", "Setor Bueno", "74230-020", "62", "991000002"),
-    ("Carla Mendes", "carla.mendes@norven.test", NivelAcessoEnum.OPERADOR, ("Aparecida de Goiânia", "GO"), "Avenida Rio Verde", "310", "Vila Brasília", "74905-030", "62", "991000003"),
-    ("Diego Alves", "diego.alves@norven.test", NivelAcessoEnum.OPERADOR, ("Goiânia", "GO"), "Rua T-30", "440", "Setor Bueno", "74210-040", "62", "991000004"),
-    ("Eduarda Rocha", "eduarda.rocha@norven.test", NivelAcessoEnum.OPERADOR, ("Anápolis", "GO"), "Avenida Brasil", "520", "Centro", "75020-050", "62", "991000005"),
-    ("Felipe Costa", "felipe.costa@norven.test", NivelAcessoEnum.OPERADOR, ("Goiânia", "GO"), "Rua 90", "610", "Setor Sul", "74093-060", "62", "991000006"),
-    ("Gabriela Nunes", "gabriela.nunes@norven.test", NivelAcessoEnum.OPERADOR, ("Aparecida de Goiânia", "GO"), "Rua Independência", "705", "Centro", "74980-070", "62", "991000007"),
-    ("Henrique Martins", "henrique.martins@norven.test", NivelAcessoEnum.OPERADOR, ("Goiânia", "GO"), "Rua 10", "810", "Setor Central", "74020-080", "62", "991000008"),
-    ("Isabela Freitas", "isabela.freitas@norven.test", NivelAcessoEnum.OPERADOR, ("Anápolis", "GO"), "Rua Engenheiro Portela", "915", "Jundiaí", "75110-090", "62", "991000009"),
-    ("João Ribeiro", "joao.ribeiro@norven.test", NivelAcessoEnum.OPERADOR, ("Goiânia", "GO"), "Avenida T-4", "1020", "Setor Bueno", "74230-100", "62", "991000010"),
-    ("Larissa Campos", "larissa.campos@norven.test", NivelAcessoEnum.OPERADOR, ("Goiânia", "GO"), "Rua 85", "1115", "Setor Marista", "74160-110", "62", "991000011"),
-    ("Marcos Vieira", "marcos.vieira@norven.test", NivelAcessoEnum.OPERADOR, ("Aparecida de Goiânia", "GO"), "Avenida Igualdade", "1210", "Garavelo", "74350-120", "62", "991000012"),
+    ("Ana Souza", "ana.souza@norven.com.br", NivelAcessoEnum.ADMINISTRADOR, ("Goiânia", "GO"), "Rua 1", "120", "Setor Oeste", "74110-010", "62", "991000001"),
+    ("Bruno Lima", "bruno.lima@norven.com.br", NivelAcessoEnum.ADMINISTRADOR, ("Goiânia", "GO"), "Rua 2", "215", "Setor Bueno", "74230-020", "62", "991000002"),
+    ("Carla Mendes", "carla.mendes@norven.com.br", NivelAcessoEnum.OPERADOR, ("Aparecida de Goiânia", "GO"), "Avenida Rio Verde", "310", "Vila Brasília", "74905-030", "62", "991000003"),
+    ("Diego Alves", "diego.alves@norven.com.br", NivelAcessoEnum.OPERADOR, ("Goiânia", "GO"), "Rua T-30", "440", "Setor Bueno", "74210-040", "62", "991000004"),
+    ("Eduarda Rocha", "eduarda.rocha@norven.com.br", NivelAcessoEnum.OPERADOR, ("Anápolis", "GO"), "Avenida Brasil", "520", "Centro", "75020-050", "62", "991000005"),
+    ("Felipe Costa", "felipe.costa@norven.com.br", NivelAcessoEnum.OPERADOR, ("Goiânia", "GO"), "Rua 90", "610", "Setor Sul", "74093-060", "62", "991000006"),
+    ("Gabriela Nunes", "gabriela.nunes@norven.com.br", NivelAcessoEnum.OPERADOR, ("Aparecida de Goiânia", "GO"), "Rua Independência", "705", "Centro", "74980-070", "62", "991000007"),
+    ("Henrique Martins", "henrique.martins@norven.com.br", NivelAcessoEnum.OPERADOR, ("Goiânia", "GO"), "Rua 10", "810", "Setor Central", "74020-080", "62", "991000008"),
+    ("Isabela Freitas", "isabela.freitas@norven.com.br", NivelAcessoEnum.OPERADOR, ("Anápolis", "GO"), "Rua Engenheiro Portela", "915", "Jundiaí", "75110-090", "62", "991000009"),
+    ("João Ribeiro", "joao.ribeiro@norven.com.br", NivelAcessoEnum.OPERADOR, ("Goiânia", "GO"), "Avenida T-4", "1020", "Setor Bueno", "74230-100", "62", "991000010"),
+    ("Larissa Campos", "larissa.campos@norven.com.br", NivelAcessoEnum.OPERADOR, ("Goiânia", "GO"), "Rua 85", "1115", "Setor Marista", "74160-110", "62", "991000011"),
+    ("Marcos Vieira", "marcos.vieira@norven.com.br", NivelAcessoEnum.OPERADOR, ("Aparecida de Goiânia", "GO"), "Avenida Igualdade", "1210", "Garavelo", "74350-120", "62", "991000012"),
 ]
 
 async def _find_or_create_contact(session: AsyncSession, ddd: str, numero: str) -> ContatoModel:
@@ -70,9 +70,9 @@ async def seed_usuarios(session: AsyncSession) -> dict[str, UsuarioModel]:
             telefone,
         ) = item
 
-        query: Select[tuple[UsuarioModel]] = select(UsuarioModel).where(
-            UsuarioModel.email == email
-        )
+        legacy_email: str = email.replace("@norven.com.br", "@norven.test")
+
+        query: Select[tuple[UsuarioModel]] = select(UsuarioModel).where(UsuarioModel.email.in_([email, legacy_email]))
 
         query_result: Result[tuple[UsuarioModel]] = await session.execute(query)
         usuario: UsuarioModel | None = query_result.scalar_one_or_none()
@@ -109,6 +109,7 @@ async def seed_usuarios(session: AsyncSession) -> dict[str, UsuarioModel]:
             await session.flush()
         else:
             usuario.nome = nome
+            usuario.email = email
             usuario.password = get_password_hash(SEED_USER_PASSWORD)
             usuario.nivel_acesso = nivel_acesso
 

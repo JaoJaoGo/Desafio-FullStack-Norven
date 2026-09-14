@@ -1,13 +1,15 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from seeders.bootstrap import SRC_DIR  # noqa: F401
+
 from core.configs import settings
 from core.enums import NivelAcessoEnum
 from core.security import get_password_hash
 from models.cidade_model import CidadeModel
-from models.estado_model import EstadoModel
 from models.contato_model import ContatoModel
 from models.endereco_model import EnderecoModel
+from models.estado_model import EstadoModel
 from models.usuario_model import UsuarioModel
 
 ADMIN_EMAIL = "admin@norven.com.br"
@@ -23,9 +25,7 @@ async def seed_admin(session: AsyncSession) -> None:
 
         await session.flush()
 
-        print("Usuário administrador já cadastrado. Senha sincronizada com a configuração atual."
-        )
-
+        print("Usuário administrador já cadastrado. Senha sincronizada com a configuração atual.")
         return
 
     query_goiania = (
@@ -38,9 +38,7 @@ async def seed_admin(session: AsyncSession) -> None:
     goiania = result_goiania.scalar_one_or_none()
 
     if goiania is None:
-        raise RuntimeError(
-            "Goiânia/GO não foi encontrada. Execute o GeographySeeder antes do AdminSeeder."
-        )
+        raise RuntimeError("Goiânia/GO não foi encontrada. Execute o GeographySeeder antes do AdminSeeder.")
 
     endereco = EnderecoModel(
         logradouro="Rua de Teste",

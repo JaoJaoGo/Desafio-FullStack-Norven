@@ -128,11 +128,13 @@ backend/
 │   └── versions/
 ├── seeders/
 │   ├── data/
-│   │   ├── pais.sql
+│   │   ├── paises.sql
 │   │   ├── estado.sql
 │   │   └── cidade.sql
-│   ├── database_seeder.py
-│   └── geography_seeder.py
+│   ├── start_database_seeder.py
+│   ├── application_seeder.py
+│   ├── full_database_seeder.py
+│   └── verify_seed_data.py
 ├── src/
 │   ├── api/
 │   │   └── v1/
@@ -454,7 +456,7 @@ Por exemplo:
 
 ```bash
 docker compose exec backend uv run alembic upgrade head
-docker compose exec backend uv run python -m seeders.database_seeder
+docker compose exec backend uv run python -m seeders.full_database_seeder
 docker compose exec backend uv run pytest
 ```
 
@@ -657,11 +659,33 @@ docker compose exec backend uv run alembic history
 
 ## 8. Executar seeders
 
-Após as migrations:
+Os seeders criam uma massa determinística para desenvolvimento e testes. **Não use esta massa para popular dados reais de produção.**
+
+Após as migrations, escolha um dos comandos abaixo. No host, a partir de `backend/`, os mesmos módulos podem ser executados com `uv run python -m seeders.<modulo>`.
+
+### Dados iniciais
+
+Popula geografia e o administrador principal:
 
 ```bash
-docker compose exec backend uv run python -m seeders.database_seeder
+docker compose exec backend uv run python -m seeders.start_database_seeder
 ```
+
+### Somente dados de aplicação
+
+```bash
+docker compose exec backend uv run python -m seeders.application_seeder
+```
+
+### Banco completo
+
+Recomendado na primeira execução. Executa os dados iniciais e a massa de aplicação:
+
+```bash
+docker compose exec backend uv run python -m seeders.full_database_seeder
+```
+
+### Dados geográficos
 
 Os dados geográficos seguem a ordem:
 
@@ -677,19 +701,57 @@ Os arquivos utilizados estão em:
 
 ```text
 seeders/data/
-├── pais.sql
+├── paises.sql
 ├── estado.sql
 └── cidade.sql
 ```
 
-O processo de seed:
+O processo de seed inicial:
 
 - popula os dados geográficos;
+- cria o administrador principal;
 - respeita as dependências de chave estrangeira;
 - pode atualizar registros já existentes;
 - pode ser executado novamente;
 - ajusta as sequences do PostgreSQL;
 - prepara os dados iniciais necessários pela aplicação.
+
+### Massa de aplicação
+
+O `application_seeder` cria:
+
+- 10 categorias
+- 10 unidades de medida
+- 12 funcionários de teste, além do administrador principal
+- 12 fornecedores
+- 20 informações nutricionais
+- 30 produtos
+- 40 lotes
+- 40 entradas
+- 40 estoques derivados das entradas
+- 30 saídas
+
+A massa inclui cenários de paginação, filtros, estoque baixo, estoque normal, produto sem estoque, produto vencido com saldo, produto próximo do vencimento, múltiplos lotes e todos os tipos de saída.
+
+### Credenciais
+
+Todos os usuários criados por `usuario_seeder.py` utilizam:
+
+```text
+Senha: Norven@123
+```
+
+O administrador principal continua utilizando a senha configurada em `PRIMARY_ADMIN_PASSWORD`.
+
+### Verificação
+
+Após executar os seeders:
+
+```bash
+docker compose exec backend uv run python -m seeders.verify_seed_data
+```
+
+O verificador confere as quantidades mínimas e alguns cenários importantes de estoque e status.
 
 ---
 
@@ -1337,7 +1399,7 @@ docker compose up -d --build
 docker compose exec backend uv run alembic upgrade head
 
 # 5. Executar seeders
-docker compose exec backend uv run python -m seeders.database_seeder
+docker compose exec backend uv run python -m seeders.full_database_seeder
 ```
 
 Em outro terminal, configure o frontend:
@@ -1371,7 +1433,7 @@ Copy-Item src/core/configs.py.example src/core/configs.py
 docker compose up -d --build
 
 docker compose exec backend uv run alembic upgrade head
-docker compose exec backend uv run python -m seeders.database_seeder
+docker compose exec backend uv run python -m seeders.full_database_seeder
 
 # Opcional: dependências Python também no host/editor
 uv sync

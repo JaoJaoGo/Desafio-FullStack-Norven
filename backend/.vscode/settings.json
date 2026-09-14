@@ -1,0 +1,17 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
+
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/src",
+    "${workspaceFolder}"
+  ],
+
+  "pyrefly.extraSearchPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/src"
+  ],
+
+  "python-envs.workspaceSearchPaths": [
+    "./.venv"
+  ]
+}

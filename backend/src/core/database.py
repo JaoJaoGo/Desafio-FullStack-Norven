@@ -5,7 +5,10 @@ from core.configs import settings
 class Database:
     _instance = None
 
-    def __new__(cls):
+    engine: AsyncEngine
+    session_factory: async_sessionmaker[AsyncSession]
+
+    def __new__(cls) -> "Database":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
 

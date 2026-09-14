@@ -133,30 +133,39 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()
 
-  const requiresAuth = to.matched.some((route) => route.meta.requiresAuth)
-  const guestOnly = to.matched.some((route) => route.meta.guestOnly)
+  const requiresAuth = to.matched.some(
+    route => route.meta.requiresAuth,
+  )
 
-  if (requiresAuth && !authStore.isAuthenticated) {
-    return {
-      name: 'login',
+  const guestOnly = to.matched.some(
+    route => route.meta.guestOnly,
+  )
 
-      query: {
-        redirect: to.fullPath,
-      },
+  if (requiresAuth) {
+    if (!authStore.isAuthenticated) {
+      return {
+        name: 'login',
+        query: {
+          redirect: to.fullPath,
+        },
+      }
+    }
+
+    try {
+      await authStore.ensureCurrentUser()
+    } catch {
+      authStore.logout()
+
+      return {
+        name: 'login',
+      }
     }
   }
 
-  try {
-    await authStore.ensureCurrentUser()
-  } catch {
-    authStore.logout()
-
-    return {
-      name: 'login',
-    }
-  }
-
-  if (guestOnly && authStore.isAuthenticated) {
+  if (
+    guestOnly
+    && authStore.isAuthenticated
+  ) {
     return {
       name: 'inicio',
     }

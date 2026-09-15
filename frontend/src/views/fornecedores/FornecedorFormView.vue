@@ -460,7 +460,7 @@ export default defineComponent({
                 label="Nome"
                 variant="outlined"
                 maxlength="50"
-                :rule="requiredRules"
+                :rules="requiredRules"
                 required
               />
             </v-col>

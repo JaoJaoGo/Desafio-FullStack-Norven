@@ -588,7 +588,7 @@ export default defineComponent({
                 type="email"
                 variant="outlined"
                 :rules="emailRules"
-                required
+                :required="!isAccountEditMode"
               />
             </v-col>
 
@@ -603,7 +603,7 @@ export default defineComponent({
                 label="Nível de acesso"
                 variant="outlined"
                 :rules="requiredRules"
-                required
+                :required="!isAccountEditMode"
               />
             </v-col>
 
@@ -620,6 +620,7 @@ export default defineComponent({
                 :hint="isEditMode ? 'Deixe vazio para manter a senha atual.' : 'Mínimo de 8 caracteres.'"
                 persistent-hint
                 :rules="passwordRules"
+                :required="!isEditMode"
               />
             </v-col>
           </v-row>

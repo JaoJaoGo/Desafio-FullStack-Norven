@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { AUTH_TOKEN_KEY } from '@/services/api'
+
 import { authService } from '@/services/authService'
+
 import type { LoginCredentials, AuthenticatedUser } from '@/types/auth'
 
 interface AuthState {
@@ -12,8 +13,7 @@ export const useAuthStore = defineStore(
     'auth',
     {
         state: (): AuthState => ({
-            token: localStorage.getItem(AUTH_TOKEN_KEY),
-
+            token: null,
             user: null,
         }),
 
@@ -32,8 +32,6 @@ export const useAuthStore = defineStore(
                 const response = await authService.login(credentials)
 
                 this.token = response.access_token
-
-                localStorage.setItem(AUTH_TOKEN_KEY, response.access_token)
 
                 try {
                     await this.fetchCurrentUser()
@@ -61,9 +59,11 @@ export const useAuthStore = defineStore(
             logout(): void {
                 this.token = null
                 this.user = null
-
-                localStorage.removeItem(AUTH_TOKEN_KEY)
             },
         },
-    },
+
+        persist: {
+            pick: ['token']
+        }
+    }
 )

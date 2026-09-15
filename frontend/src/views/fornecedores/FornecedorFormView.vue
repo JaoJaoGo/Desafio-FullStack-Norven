@@ -470,7 +470,7 @@ export default defineComponent({
               md="6"
             >
               <v-text-field
-                :model="form.cnpj"
+                v-model="form.cnpj"
                 label="CNPJ"
                 variant="outlined"
                 maxlength="18"
